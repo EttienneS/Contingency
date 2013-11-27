@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
@@ -20,7 +19,6 @@ namespace Contingency.Units
         }
 
         public int Damage { get; set; }
-
 
         internal Unit Owner
         {

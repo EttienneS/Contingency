@@ -28,9 +28,9 @@ namespace Contingency.Units
             Team = teamName;
             Vision = 50;
 
-            CurrentOrder = new Order(OrderType.None,Location);
+            CurrentOrder = new Order(OrderType.None, Location);
 
-            ShootRate = 5;
+            ShootRate = 500;
             CanShoot = true;
         }
 
@@ -67,7 +67,9 @@ namespace Contingency.Units
             if (CanShoot)
             {
                 Projectile p = new Projectile(_bulletSprite);
-                p.TargetAngle = TargetAngle +(float)Helper.Rand.NextDouble() - (float)Helper.Rand.NextDouble(); // shot spread
+                
+                p.TargetAngle = TargetAngle + (float)Helper.Rand.Next(-5, 5) / 100;
+
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -1, (float)Math.Sin(p.TargetAngle) * -1);
                 p.Location = Location;
                 p.Owner = this;
@@ -75,7 +77,6 @@ namespace Contingency.Units
                 CanShoot = false;
                 projectiles.Add(p);
             }
-
         }
 
         internal void UpdateTarget(List<Unit> units)
@@ -103,6 +104,5 @@ namespace Contingency.Units
                 }
             }
         }
-
     }
 }

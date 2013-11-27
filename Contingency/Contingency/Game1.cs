@@ -13,13 +13,12 @@ namespace Contingency
     public class Game1 : Game
     {
         public bool Paused = true;
-        private Dictionary<string, Texture2D> contentSprites = new Dictionary<string, Texture2D>();
         private List<Explosion> explosions = new List<Explosion>();
         private GraphicsDeviceManager graphics;
         private MouseState mouseStateCurrent, mouseStatePrevious;
         private List<Projectile> projectiles = new List<Projectile>();
-        //private Random r = new Random();
         private SpriteBatch spriteBatch;
+        private Texture2D LineTexture;
         private List<Unit> units = new List<Unit>();
 
         public Game1()
@@ -59,17 +58,24 @@ namespace Contingency
 
             LoadSprites();
 
+            LineTexture = new Texture2D(GraphicsDevice, 1, 1);
+            Color[] data = new Color[LineTexture.Width * LineTexture.Height];
+
+            LineTexture.GetData(data);
+            data[0] = Color.White;
+            LineTexture.SetData(data);
+
             // spawn units
             for (int i = 0; i < 10; i++)
             {
-                Unit red = new Unit(20, 20, 40, 50 + i * 30, contentSprites["unitRed"], contentSprites["unitRedSelected"], 5, "red", contentSprites["projectileRed"]);
-                
+                Unit red = new Unit(20, 20, 40, 50 + i * 30, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 5, "red", SpriteList.ContentSprites["projectileRed"]);
+
                 red.CurrentAngle = red.CurrentAngle + (float)Math.PI;
                 red.TargetAngle = red.CurrentAngle;
 
                 units.Add(red);
 
-                units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 30, contentSprites["unitBlue"], contentSprites["unitBlueSelected"], 5, "blue", contentSprites["projectileBlue"]));
+                units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 30, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 5, "blue", SpriteList.ContentSprites["projectileBlue"]));
             }
         }
 
@@ -126,6 +132,23 @@ namespace Contingency
             mouseStatePrevious = mouseStateCurrent;
         }
 
+        private void DrawExplosions()
+        {
+            foreach (Explosion exp in explosions)
+            {
+                spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.spriteWidth, exp.spriteHeight), exp.spriteRect, Color.White);
+            }
+        }
+
+        private void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end, Color color)
+        {
+            Vector2 edge = end - start;
+            // calculate angle to rotate line
+            float angle = (float)Math.Atan2(edge.Y, edge.X);
+
+            sb.Draw(LineTexture, new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), 1), null, color, angle, new Vector2(0, 0), SpriteEffects.None, 0);
+        }
+
         private void DrawProjectiles()
         {
             foreach (Projectile sprite in projectiles)
@@ -139,17 +162,24 @@ namespace Contingency
             foreach (Unit u in units)
             {
                 spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
-
             }
-        }
 
-        private void DrawExplosions()
-        {
-            foreach (Explosion exp in explosions)
+            foreach (Unit u in units)
             {
-                spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.spriteWidth, exp.spriteHeight), exp.spriteRect, Color.White);
+                if (u.CurrentOrder.Type != OrderType.None)
+                {
+                    Texture2D sprite = SpriteList.ContentSprites["targetAttack"];
+                    Color color = Color.Red;
 
+                    if (u.CurrentOrder.Type == OrderType.Move)
+                    {
+                        sprite = SpriteList.ContentSprites["targetMove"];
+                        color = Color.LimeGreen;
+                    }
 
+                    spriteBatch.Draw(sprite, u.CurrentOrder.Target, null, Color.White, 0f, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0f);
+                    DrawLine(spriteBatch, u.Location, u.CurrentOrder.Target + new Vector2(5), color);
+                }
             }
         }
 
@@ -168,13 +198,15 @@ namespace Contingency
 
         private void LoadSprites()
         {
-            contentSprites.Add("unitRed", Content.Load<Texture2D>("unitRed"));
-            contentSprites.Add("unitBlue", Content.Load<Texture2D>("unitBlue"));
-            contentSprites.Add("unitRedSelected", Content.Load<Texture2D>("unitRedSelected"));
-            contentSprites.Add("unitBlueSelected", Content.Load<Texture2D>("unitBlueSelected"));
-            contentSprites.Add("projectileRed", Content.Load<Texture2D>("projectileRed"));
-            contentSprites.Add("projectileBlue", Content.Load<Texture2D>("projectileBlue"));
-            contentSprites.Add("explosion", Content.Load<Texture2D>("explosion"));
+            SpriteList.ContentSprites.Add("unitRed", Content.Load<Texture2D>("unitRed"));
+            SpriteList.ContentSprites.Add("unitBlue", Content.Load<Texture2D>("unitBlue"));
+            SpriteList.ContentSprites.Add("unitRedSelected", Content.Load<Texture2D>("unitRedSelected"));
+            SpriteList.ContentSprites.Add("unitBlueSelected", Content.Load<Texture2D>("unitBlueSelected"));
+            SpriteList.ContentSprites.Add("projectileRed", Content.Load<Texture2D>("projectileRed"));
+            SpriteList.ContentSprites.Add("projectileBlue", Content.Load<Texture2D>("projectileBlue"));
+            SpriteList.ContentSprites.Add("explosion", Content.Load<Texture2D>("explosion"));
+            SpriteList.ContentSprites.Add("targetMove", Content.Load<Texture2D>("targetMove"));
+            SpriteList.ContentSprites.Add("targetAttack", Content.Load<Texture2D>("targetAttack"));
         }
 
         private void MouseClicked()
@@ -208,7 +240,6 @@ namespace Contingency
                         else
                         {
                             selectedUnit.CurrentOrder = new Order(OrderType.Attack, u.Location);
-
                         }
                         clickedUnit = true;
                         break;
@@ -227,7 +258,7 @@ namespace Contingency
             {
                 if (units[i].HP <= 0)
                 {
-                    explosions.Add(new Explosion(contentSprites["explosion"], new Vector2(units[i].Location.X - units[i].Width / 2, units[i].Location.Y - units[i].Height / 2)));
+                    explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(units[i].Location.X - units[i].Width / 2, units[i].Location.Y - units[i].Height / 2)));
                     units.RemoveAt(i);
                     i--;
                 }
