@@ -1,53 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    class Unit : ISprite
+    internal class Unit : Sprite
     {
-        public Unit(int width, int height, int x, int y, Color color)
+        private Texture2D _selectedSprite;
+        private Texture2D _sprite;
+        private Texture2D _bulletSprite;
+        private float _timer;
+
+        public Order CurrentOrder;
+
+        public Unit(int width, int height, int x, int y, Texture2D sprite, Texture2D selectedSprite, int hp, string teamName, Texture2D bulletSprite)
         {
             Width = width;
             Height = height;
             Location = new Vector2(x, y);
-            Color = color;
+            HP = hp;
 
-            _collisionRectangle = new Rectangle(x, y, width, height);
+            CollisionRadius = width / 2;
+            _bulletSprite = bulletSprite;
+            _sprite = sprite;
+            _selectedSprite = selectedSprite;
+            Team = teamName;
+            Vision = 50;
+
+            CurrentOrder = new Order(OrderType.None,Location);
+
+            ShootRate = 5;
+            CanShoot = true;
         }
 
-        public Vector2 Location { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public Color Color;
-        private Rectangle _collisionRectangle;
+        public double Vision { get; set; }
 
-        public Rectangle CollisionRectangle
+        public int HP { get; set; }
+
+        public bool Selected { get; set; }
+
+        public Vector2 Facing { get; set; }
+
+        public string Team { get; set; }
+
+        public float ShootRate { get; set; }
+
+        public bool CanShoot { get; set; }
+
+        public override Texture2D GetSprite()
         {
-            get
-            {
-                _collisionRectangle.X = (int)Location.X;
-                _collisionRectangle.Y = (int)Location.Y;
+            return Selected ? _selectedSprite : _sprite;
+        }
 
-                return _collisionRectangle;
+        internal void Hit(Projectile p)
+        {
+            if (Team == p.Owner.Team)
+                p.Damage = 0;
+
+            HP -= p.Damage;
+            p.Momentum = new Vector2(0f);
+        }
+
+        internal void Shoot(ref List<Projectile> projectiles)
+        {
+            if (CanShoot)
+            {
+                Projectile p = new Projectile(_bulletSprite);
+                p.TargetAngle = TargetAngle +(float)Helper.Rand.NextDouble() - (float)Helper.Rand.NextDouble(); // shot spread
+                p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -1, (float)Math.Sin(p.TargetAngle) * -1);
+                p.Location = Location;
+                p.Owner = this;
+
+                CanShoot = false;
+                projectiles.Add(p);
+            }
+
+        }
+
+        internal void UpdateTarget(List<Unit> units)
+        {
+            foreach (Unit u in units)
+            {
+                if (u.Team != Team && u.Touches(u.CurrentOrder.Target, Vision))
+                {
+                    Target(u.Location);
+                    break;
+                }
             }
         }
 
-        public Texture2D GetSprite(GraphicsDevice graphicsDevice)
+        public void ReloadGun(float elapsedMiliSeconds)
         {
-            Texture2D texture = new Texture2D(graphicsDevice, Width, Height);
+            if (!CanShoot)
+            {
+                _timer += elapsedMiliSeconds;
 
-            Color[] data = new Color[Width * Height];
-
-            for (int i = 0; i < data.Length; i++)
-                data[i] = Color;
-
-            texture.SetData(data);
-
-            return texture;
+                if (_timer > ShootRate)
+                {
+                    _timer = 0;
+                    CanShoot = true;
+                }
+            }
         }
+
     }
 }
