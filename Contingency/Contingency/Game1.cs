@@ -12,15 +12,16 @@ namespace Contingency
     /// </summary>
     public class Game1 : Game
     {
-        private bool _paused = true;
         private readonly List<Block> _blocks = new List<Block>();
         private readonly List<Explosion> _explosions = new List<Explosion>();
-        private Texture2D _lineTexture;
-        private MouseState _mouseStateCurrent, _mouseStatePrevious;
-        private List<Projectile> _projectiles = new List<Projectile>();
-        private SpriteBatch _spriteBatch;
         private readonly List<Unit> _units = new List<Unit>();
         private GraphicsDeviceManager _graphics;
+        private Texture2D _lineTexture;
+        private Menu _menu = new Menu();
+        private MouseState _mouseStateCurrent, _mouseStatePrevious;
+        private bool _paused = true;
+        private List<Projectile> _projectiles = new List<Projectile>();
+        private SpriteBatch _spriteBatch;
 
         #region Init
 
@@ -83,6 +84,8 @@ namespace Contingency
 
             _spriteBatch.Begin();
 
+            DrawMenu();
+
             DrawText();
 
             DrawBlocks();
@@ -120,6 +123,15 @@ namespace Contingency
             float angle = (float)Math.Atan2(edge.Y, edge.X);
 
             sb.Draw(_lineTexture, new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), 1), null, color, angle, new Vector2(0, 0), SpriteEffects.None, 0);
+        }
+
+        private void DrawMenu()
+        {
+            if (_menu.Visible)
+            {
+                _spriteBatch.Draw(_menu.GetSprite(), _menu.Location, Color.White);
+
+            }
         }
 
         private void DrawProjectiles()
@@ -214,29 +226,38 @@ namespace Contingency
             else
             {
                 Vector2 mouseVector = new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y);
-                bool clickedUnit = false;
-                foreach (Unit u in _units)
+                if (!_menu.Visible)
                 {
-                    if (u != selectedUnit && u.Touches(mouseVector, 2.0))
-                    {
-                        if (u.Team == selectedUnit.Team)
-                        {
-                            selectedUnit.CurrentOrder = new Order(OrderType.Move, mouseVector);
-                        }
-                        else
-                        {
-                            selectedUnit.CurrentOrder = new Order(OrderType.Attack, u.Location);
-                        }
-                        clickedUnit = true;
-                        break;
-                    }
+                    _menu.Visible = true;
+                    _menu.Location = new Vector2(_mouseStateCurrent.X - _menu.Width / 2, _mouseStateCurrent.Y - _menu.Height / 2);
                 }
-                if (!clickedUnit)
+                else
                 {
-                    selectedUnit.CurrentOrder = new Order(OrderType.Move, mouseVector);
+                    if (_menu.TouchesWithOffset(mouseVector, 1.0, _menu.Width / 2))
+                    {
+                        _menu.OptionsMapping.Clear();
+                        _menu.OptionsMapping.Add("topleft", "Move");
+                        _menu.OptionsMapping.Add("topRight", "Attack");
+                        _menu.OptionsMapping.Add("bottomLeft", "Stop");
+                        _menu.OptionsMapping.Add("bottomRight", "Stop");
+                        switch (_menu.GetMenuSelection(mouseVector))
+                        {
+                            case "Move":
+                                selectedUnit.CurrentOrder = new Order(OrderType.Attack, mouseVector);
+                                break;
+                            case "Attack":
+                                selectedUnit.CurrentOrder = new Order(OrderType.Move, mouseVector);
+                                break;
+                            case "Stop":
+                                selectedUnit.CurrentOrder = new Order(OrderType.None, selectedUnit.Location);
+                                break;
+                        }
+                    }
                 }
             }
         }
+
+        
 
         #endregion Porcess Input
 

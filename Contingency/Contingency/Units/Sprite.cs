@@ -61,6 +61,16 @@ namespace Contingency.Units
             return false;
         }
 
+        public bool TouchesWithOffset(Vector2 location, double radius, float offset)
+        {
+            location = new Vector2(location.X - offset, location.Y - offset);
+
+            Vector2 Distance = this.Location - location;
+            if (Distance.Length() < this.CollisionRadius + radius) // if the distance is less than the diameter
+                return true;
+            return false;
+        }
+
         public void UpdateState()
         {
             // invert angle if they go over -pi and +pi (circular value)

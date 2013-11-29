@@ -35,6 +35,7 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Menu.cs" />
     <Compile Include="Units\Block.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Helper.cs" />
@@ -70,6 +71,9 @@
     </Content>
     <Content Include="Content\block.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\menu.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\projectileBlue.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
