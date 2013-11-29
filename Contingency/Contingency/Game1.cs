@@ -109,7 +109,7 @@ namespace Contingency
         {
             foreach (Explosion exp in _explosions)
             {
-                _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.spriteWidth, exp.spriteHeight), exp.spriteRect, Color.White);
+                _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.SpriteWidth, exp.SpriteHeight), exp.SpriteRect, Color.White);
             }
         }
 

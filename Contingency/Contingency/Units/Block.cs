@@ -1,8 +1,7 @@
-﻿using Contingency.Units;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Contingency
+namespace Contingency.Units
 {
     public class Block : Sprite
     {

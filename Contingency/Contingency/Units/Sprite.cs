@@ -8,7 +8,7 @@ namespace Contingency.Units
     {
         public Vector2 Momentum = new Vector2(0f);
         public float TargetAngle;
-        public float TurnSpeed = 0.05f;
+        public const float TurnSpeed = 0.05f;
 
         private double _collisionRadius;
 
