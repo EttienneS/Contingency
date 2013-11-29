@@ -5,14 +5,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    internal class Unit : Sprite
+    public class Unit : Sprite
     {
-        private Texture2D _selectedSprite;
-        private Texture2D _sprite;
-        private Texture2D _bulletSprite;
-        private float _timer;
-
         public Order CurrentOrder;
+        private readonly Texture2D _bulletSprite;
+        private readonly Texture2D _selectedSprite;
+        private readonly Texture2D _sprite;
+        private float _timer;
 
         public Unit(int width, int height, int x, int y, Texture2D sprite, Texture2D selectedSprite, int hp, string teamName, Texture2D bulletSprite)
         {
@@ -34,23 +33,35 @@ namespace Contingency.Units
             CanShoot = true;
         }
 
-        public double Vision { get; set; }
+        public bool CanShoot { get; set; }
 
         public int HP { get; set; }
 
         public bool Selected { get; set; }
 
-        public Vector2 Facing { get; set; }
+        public float ShootRate { get; set; }
 
         public string Team { get; set; }
 
-        public float ShootRate { get; set; }
-
-        public bool CanShoot { get; set; }
+        public double Vision { get; set; }
 
         public override Texture2D GetSprite()
         {
             return Selected ? _selectedSprite : _sprite;
+        }
+
+        public void ReloadGun(float elapsedMiliSeconds)
+        {
+            if (!CanShoot)
+            {
+                _timer += elapsedMiliSeconds;
+
+                if (_timer > ShootRate)
+                {
+                    _timer = 0;
+                    CanShoot = true;
+                }
+            }
         }
 
         internal void Hit(Projectile p)
@@ -67,7 +78,7 @@ namespace Contingency.Units
             if (CanShoot)
             {
                 Projectile p = new Projectile(_bulletSprite);
-                
+
                 p.TargetAngle = TargetAngle + (float)Helper.Rand.Next(-5, 5) / 100;
 
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -1, (float)Math.Sin(p.TargetAngle) * -1);
@@ -76,32 +87,6 @@ namespace Contingency.Units
 
                 CanShoot = false;
                 projectiles.Add(p);
-            }
-        }
-
-        internal void UpdateTarget(List<Unit> units)
-        {
-            foreach (Unit u in units)
-            {
-                if (u.Team != Team && u.Touches(u.CurrentOrder.Target, Vision))
-                {
-                    Target(u.Location);
-                    break;
-                }
-            }
-        }
-
-        public void ReloadGun(float elapsedMiliSeconds)
-        {
-            if (!CanShoot)
-            {
-                _timer += elapsedMiliSeconds;
-
-                if (_timer > ShootRate)
-                {
-                    _timer = 0;
-                    CanShoot = true;
-                }
             }
         }
     }

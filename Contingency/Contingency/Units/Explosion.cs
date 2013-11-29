@@ -6,27 +6,27 @@ namespace Contingency.Units
 {
     internal class Explosion : Sprite
     {
-        public int curFrameX = 0;
-        public int curFrameY = 0;
+        private int curFrameX;
+        private int curFrameY;
 
-        public int imageNbr = 25;
+        public const int ImageNbr = 25;
 
-        public float interval = 40f;
+        public const float Interval = 40f;
 
-        public int spriteHeight;
+        public readonly int SpriteHeight;
 
-        public Rectangle spriteRect;
+        public Rectangle SpriteRect;
 
-        public int spriteWidth;
+        public readonly int SpriteWidth;
 
-        public float timer = 0;
+        public float timer;
 
         public Explosion(Texture2D sprite, Vector2 location)
         {
             SpriteSheet = sprite;
-            spriteWidth = SpriteSheet.Width / (int)Math.Sqrt(imageNbr);
-            spriteHeight = SpriteSheet.Height / (int)Math.Sqrt(imageNbr);
-            spriteRect = new Rectangle(curFrameX * spriteWidth, 0, spriteWidth, spriteHeight);
+            SpriteWidth = SpriteSheet.Width / (int)Math.Sqrt(ImageNbr);
+            SpriteHeight = SpriteSheet.Height / (int)Math.Sqrt(ImageNbr);
+            SpriteRect = new Rectangle(curFrameX * SpriteWidth, 0, SpriteWidth, SpriteHeight);
 
             Location = location;
         }
@@ -44,7 +44,7 @@ namespace Contingency.Units
         {
             timer += elapsedSeconds;
 
-            if (timer >= interval)
+            if (timer >= Interval)
             {
                 timer = 0;
                 curFrameX++;
@@ -55,12 +55,12 @@ namespace Contingency.Units
                 }
             }
 
-            spriteRect.X = curFrameX * spriteWidth;
-            spriteRect.Y = curFrameY * spriteHeight;
+            SpriteRect.X = curFrameX * SpriteWidth;
+            SpriteRect.Y = curFrameY * SpriteHeight;
 
             if (curFrameY > 5)
             {
-                this.Done = true;
+                Done = true;
             }
         }
     }

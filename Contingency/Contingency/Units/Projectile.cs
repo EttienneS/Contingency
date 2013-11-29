@@ -10,7 +10,7 @@ namespace Contingency.Units
         {
             Sprite = sprite;
             Damage = 5;
-            CollisionRadius = this.Width / 2;
+            CollisionRadius = Width / 2;
         }
 
         public override Texture2D GetSprite()
@@ -25,7 +25,5 @@ namespace Contingency.Units
             get;
             set;
         }
-
-        public static Texture2D StandardBullet { get; set; }
     }
 }
