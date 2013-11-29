@@ -10,7 +10,6 @@ namespace Contingency
 {
     public class Menu : Sprite
     {
-        public readonly Dictionary<string, string> OptionsMapping = new Dictionary<string, string>();
         public bool Visible { get; set; }
 
         public Menu()
@@ -26,27 +25,34 @@ namespace Contingency
             return SpriteList.ContentSprites["menu"];
         }
 
+        public Dictionary<string, Rectangle> Quads
+        {
+            get
+            {
+                Dictionary<string, Rectangle> quads = new Dictionary<string, Rectangle>();
+                int menuX = (int)Location.X;
+                int menuY = (int)Location.Y;
+                int quadWidth = Width / 2;
+                int quadHeight = Height / 2;
+
+                quads.Add("Attack", new Rectangle(menuX, menuY, quadWidth, quadHeight));                               // topleft
+                quads.Add("Move", new Rectangle(menuX + quadWidth, menuY, quadWidth, quadHeight));                  // topRight
+                quads.Add("Stop", new Rectangle(menuX, menuY + quadHeight, quadWidth, quadHeight));               // bottomLeft
+                quads.Add("Special", new Rectangle(menuX + quadWidth, menuY + quadHeight, quadWidth, quadHeight));  // bottomRight
+
+                return quads;
+            }
+        }
+
         public string GetMenuSelection(Vector2 mouseVector)
         {
-            Dictionary<string, Rectangle> quads = new Dictionary<string, Rectangle>();
-
-            int menuX = (int)Location.X;
-            int menuY = (int)Location.Y;
-            int quadWidth = Width / 2;
-            int quadHeight = Height / 2;
-
-            quads.Add("topleft", new Rectangle(menuX, menuY, quadWidth, quadHeight));
-            quads.Add("topRight", new Rectangle(menuX + quadWidth, menuY, quadWidth, quadHeight));
-            quads.Add("bottomLeft", new Rectangle(menuX, menuY + quadHeight, quadWidth, quadHeight));
-            quads.Add("bottomRight", new Rectangle(menuX + quadWidth, menuY + quadHeight, quadWidth, quadHeight));
-
             Rectangle mouse = new Rectangle((int)mouseVector.X, (int)mouseVector.Y, 1, 1);
-            foreach (var kvpQuad in quads)
+            foreach (var kvpQuad in Quads)
             {
                 if (kvpQuad.Value.Intersects(mouse))
                 {
                     Visible = false;
-                    return OptionsMapping[kvpQuad.Key];
+                    return kvpQuad.Key;
                 }
             }
 

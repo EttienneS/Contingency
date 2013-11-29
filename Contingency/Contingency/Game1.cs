@@ -131,6 +131,11 @@ namespace Contingency
             {
                 _spriteBatch.Draw(_menu.GetSprite(), _menu.Location, Color.White);
 
+                Dictionary<string, Rectangle> quads = _menu.Quads;
+                _spriteBatch.DrawString(SpriteList.Font, "A", new Vector2(quads["Attack"].X + 15, quads["Attack"].Y + 6), Color.Black);
+                _spriteBatch.DrawString(SpriteList.Font, "M", new Vector2(quads["Move"].X + 3, quads["Move"].Y + 6), Color.Black);
+                _spriteBatch.DrawString(SpriteList.Font, "S", new Vector2(quads["Stop"].X + 15, quads["Stop"].Y), Color.Black);
+                _spriteBatch.DrawString(SpriteList.Font, "X", new Vector2(quads["Special"].X + 3, quads["Special"].Y), Color.Black);
             }
         }
 
@@ -202,7 +207,10 @@ namespace Contingency
                 Unit selected = GetSelctedUnit();
 
                 if (selected != null)
+                {
                     selected.Selected = false;
+                    _menu.Visible = false;
+                }
             }
 
             _mouseStatePrevious = _mouseStateCurrent;
@@ -235,19 +243,15 @@ namespace Contingency
                 {
                     if (_menu.TouchesWithOffset(mouseVector, 1.0, _menu.Width / 2))
                     {
-                        _menu.OptionsMapping.Clear();
-                        _menu.OptionsMapping.Add("topleft", "Move");
-                        _menu.OptionsMapping.Add("topRight", "Attack");
-                        _menu.OptionsMapping.Add("bottomLeft", "Stop");
-                        _menu.OptionsMapping.Add("bottomRight", "Stop");
                         switch (_menu.GetMenuSelection(mouseVector))
                         {
-                            case "Move":
+                            case "Attack":
                                 selectedUnit.CurrentOrder = new Order(OrderType.Attack, mouseVector);
                                 break;
-                            case "Attack":
+                            case "Move":
                                 selectedUnit.CurrentOrder = new Order(OrderType.Move, mouseVector);
                                 break;
+                            case "Special":
                             case "Stop":
                                 selectedUnit.CurrentOrder = new Order(OrderType.None, selectedUnit.Location);
                                 break;
@@ -257,7 +261,7 @@ namespace Contingency
             }
         }
 
-        
+
 
         #endregion Porcess Input
 

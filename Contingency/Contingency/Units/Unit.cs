@@ -29,7 +29,7 @@ namespace Contingency.Units
 
             CurrentOrder = new Order(OrderType.None, Location);
 
-            ShootRate = 500;
+            ShootRate = 250;
             CanShoot = true;
         }
 
@@ -81,7 +81,8 @@ namespace Contingency.Units
 
                 p.TargetAngle = TargetAngle + (float)Helper.Rand.Next(-5, 5) / 100;
 
-                p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -1, (float)Math.Sin(p.TargetAngle) * -1);
+                p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -5, (float)Math.Sin(p.TargetAngle) * -5);
+                
                 p.Location = Location;
                 p.Owner = this;
 
