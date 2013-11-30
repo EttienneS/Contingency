@@ -9,7 +9,7 @@ namespace Contingency.Units
         public Projectile(Texture2D sprite)
         {
             Sprite = sprite;
-            Damage = 5;
+            Damage = 3;
             CollisionRadius = Width / 2;
         }
 

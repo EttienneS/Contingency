@@ -13,13 +13,14 @@ namespace Contingency.Units
         private readonly Texture2D _sprite;
         private float _timer;
 
-        public Unit(int width, int height, int x, int y, Texture2D sprite, Texture2D selectedSprite, int hp, string teamName, Texture2D bulletSprite)
+        public Unit(int width, int height, int x, int y, Texture2D sprite, Texture2D selectedSprite, int maxHp, string teamName, Texture2D bulletSprite)
         {
             Width = width;
             Height = height;
             Location = new Vector2(x, y);
-            HP = hp;
-
+            CurrentHP = maxHp;
+            MaxHP = maxHp;
+            
             CollisionRadius = width / 2;
             _bulletSprite = bulletSprite;
             _sprite = sprite;
@@ -29,13 +30,14 @@ namespace Contingency.Units
 
             CurrentOrder = new Order(OrderType.None, Location);
 
-            ShootRate = 250;
+            ShootRate = 100;
             CanShoot = true;
         }
 
         public bool CanShoot { get; set; }
 
-        public int HP { get; set; }
+        public int MaxHP { get; set; }
+        public int CurrentHP { get; set; }
 
         public bool Selected { get; set; }
 
@@ -69,7 +71,7 @@ namespace Contingency.Units
             if (Team == p.Owner.Team)
                 p.Damage = 0;
 
-            HP -= p.Damage;
+            CurrentHP -= p.Damage;
             p.Momentum = new Vector2(0f);
         }
 

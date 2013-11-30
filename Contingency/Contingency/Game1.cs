@@ -55,12 +55,12 @@ namespace Contingency
             // spawn units
             for (int i = 0; i < 10; i++)
             {
-                Unit red = new Unit(20, 20, 40, 50 + i * 40, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 5, "red", SpriteList.ContentSprites["projectileRed"]);
+                Unit red = new Unit(20, 20, 40, 50 + i * 40, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 50, "red", SpriteList.ContentSprites["projectileRed"]);
 
                 red.CurrentAngle = red.CurrentAngle + (float)Math.PI;
                 red.TargetAngle = red.CurrentAngle;
                 _units.Add(red);
-                _units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 5, "blue", SpriteList.ContentSprites["projectileBlue"]));
+                _units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 50, "blue", SpriteList.ContentSprites["projectileBlue"]));
             }
 
             for (int i = 0; i < 40; i++)
@@ -116,13 +116,13 @@ namespace Contingency
             }
         }
 
-        private void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end, Color color)
+        private void DrawLine(SpriteBatch sb, Vector2 start, Vector2 end, Color color, int width)
         {
             Vector2 edge = end - start;
             // calculate angle to rotate line
             float angle = (float)Math.Atan2(edge.Y, edge.X);
 
-            sb.Draw(_lineTexture, new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), 1), null, color, angle, new Vector2(0, 0), SpriteEffects.None, 0);
+            sb.Draw(_lineTexture, new Rectangle((int)start.X, (int)start.Y, (int)edge.Length(), width), null, color, angle, new Vector2(0, 0), SpriteEffects.None, 0);
         }
 
         private void DrawMenu()
@@ -157,6 +157,13 @@ namespace Contingency
             foreach (Unit u in _units)
             {
                 _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
+
+                Vector2 startPoint = new Vector2(u.Location.X - u.Width / 2, u.Location.Y - 15);
+                Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
+                Vector2 endPointHp = new Vector2(startPoint.X + (u.Width * ((float)u.CurrentHP / (float)u.MaxHP)), u.Location.Y - 15);
+
+                DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
+                DrawLine(_spriteBatch, startPoint, endPointHp, Color.LimeGreen, 3);
             }
 
             foreach (Unit u in _units)
@@ -173,7 +180,7 @@ namespace Contingency
                     }
 
                     _spriteBatch.Draw(sprite, u.CurrentOrder.Target, null, Color.White, 0f, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0f);
-                    DrawLine(_spriteBatch, u.Location, u.CurrentOrder.Target + new Vector2(5), color);
+                    DrawLine(_spriteBatch, u.Location, u.CurrentOrder.Target + new Vector2(5), color, 2);
                 }
             }
         }
@@ -254,6 +261,7 @@ namespace Contingency
                             case "Special":
                             case "Stop":
                                 selectedUnit.CurrentOrder = new Order(OrderType.None, selectedUnit.Location);
+                                selectedUnit.Momentum = new Vector2(0f);
                                 break;
                         }
                     }
@@ -289,7 +297,7 @@ namespace Contingency
         {
             for (int i = 0; i < _units.Count; i++)
             {
-                if (_units[i].HP <= 0)
+                if (_units[i].CurrentHP <= 0)
                 {
                     _explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(_units[i].Location.X - _units[i].Width / 2, _units[i].Location.Y - _units[i].Height / 2)));
                     _units.RemoveAt(i);
