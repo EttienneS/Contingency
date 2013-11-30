@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -63,11 +64,11 @@ namespace Contingency
                 _units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 50, "blue", SpriteList.ContentSprites["projectileBlue"]));
             }
 
-            for (int i = 0; i < 40; i++)
-            {
-                _blocks.Add(new Block(new Vector2(80, 40 + i * 10)));
-                _blocks.Add(new Block(new Vector2(GraphicsDevice.Viewport.Width - 100, 40 + i * 10)));
-            }
+            //for (int i = 0; i <40; i++)
+            //{
+            //    _blocks.Add(new Block(new Vector2(80, 40 + i * 10)));
+            //    _blocks.Add(new Block(new Vector2(GraphicsDevice.Viewport.Width - 100, 40 + i *10)));
+            //}
         }
 
         protected override void UnloadContent()
@@ -168,19 +169,36 @@ namespace Contingency
 
             foreach (Unit u in _units)
             {
-                if (u.CurrentOrder.Type != OrderType.None)
+                for (int i = 0; i < u.OrderQueue.Count; i++)
                 {
+                    Order o = u.OrderQueue[i];
                     Texture2D sprite = SpriteList.ContentSprites["targetAttack"];
                     Color color = Color.Red;
 
-                    if (u.CurrentOrder.Type == OrderType.Move)
+                    if (o.Type == OrderType.Move)
                     {
                         sprite = SpriteList.ContentSprites["targetMove"];
                         color = Color.LimeGreen;
                     }
 
-                    _spriteBatch.Draw(sprite, u.CurrentOrder.Target, null, Color.White, 0f, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0f);
-                    DrawLine(_spriteBatch, u.Location, u.CurrentOrder.Target + new Vector2(5), color, 2);
+                    Vector2 source = u.Location;
+
+                    if (i > 0)
+                    {
+                        Vector2 lastMoveLocation = u.Location;
+                        for (int l = 0; l < i; l++)
+                        {
+                            if (u.OrderQueue[l].Type == OrderType.Move )
+                            {
+                                lastMoveLocation = u.OrderQueue[l].Target;
+                            }
+                        }
+                        source = lastMoveLocation;
+                        source += new Vector2(5f);
+                    }
+
+                    _spriteBatch.Draw(sprite, o.Target, null, Color.White, 0f, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0f);
+                    DrawLine(_spriteBatch, source, o.Target + new Vector2(5), color, 2);
                 }
             }
         }
@@ -253,15 +271,22 @@ namespace Contingency
                         switch (_menu.GetMenuSelection(mouseVector))
                         {
                             case "Attack":
-                                selectedUnit.CurrentOrder = new Order(OrderType.Attack, mouseVector);
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Attack, mouseVector));
                                 break;
                             case "Move":
-                                selectedUnit.CurrentOrder = new Order(OrderType.Move, mouseVector);
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Move, mouseVector));
                                 break;
                             case "Special":
+                                selectedUnit.OrderQueue.Clear();
+                                break;
                             case "Stop":
-                                selectedUnit.CurrentOrder = new Order(OrderType.None, selectedUnit.Location);
-                                selectedUnit.Momentum = new Vector2(0f);
+                                Vector2 target = selectedUnit.Location;
+
+                                if (selectedUnit.OrderQueue.Count > 1)
+                                {
+                                    target = selectedUnit.OrderQueue.Last().Target;
+                                }
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.None, target));
                                 break;
                         }
                     }
@@ -402,9 +427,9 @@ namespace Contingency
 
                         if (u.CurrentAngle == u.TargetAngle && Sprite.AlmostEquals(u.Location.X, u.CurrentOrder.Target.X, 2) && Sprite.AlmostEquals(u.Location.Y, u.CurrentOrder.Target.Y, 2))
                         {
-                            u.CurrentOrder.Type = OrderType.None;
                             u.Location = u.CurrentOrder.Target;
                             u.Momentum = new Vector2(0f);
+                            u.OrderQueue.RemoveAt(0);
                         }
 
                         if (u.Momentum.X > 0f || u.Momentum.Y > 0f)
@@ -430,6 +455,11 @@ namespace Contingency
                             u.Shoot(ref _projectiles);
                         }
 
+                        if (u.ShotCount == 5)
+                        {
+                            u.ShotCount = 0;
+                            u.OrderQueue.RemoveAt(0);
+                        }
                         break;
                 }
 

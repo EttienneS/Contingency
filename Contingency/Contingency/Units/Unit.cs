@@ -7,7 +7,8 @@ namespace Contingency.Units
 {
     public class Unit : Sprite
     {
-        public Order CurrentOrder;
+        public List<Order> OrderQueue; 
+        
         private readonly Texture2D _bulletSprite;
         private readonly Texture2D _selectedSprite;
         private readonly Texture2D _sprite;
@@ -28,12 +29,26 @@ namespace Contingency.Units
             Team = teamName;
             Vision = 50;
 
-            CurrentOrder = new Order(OrderType.None, Location);
-
+            OrderQueue = new List<Order>();
+            ShotCount = 0;
             ShootRate = 100;
             CanShoot = true;
         }
 
+        public Order CurrentOrder
+        {
+            get
+            {
+                if (OrderQueue != null && OrderQueue.Count > 0)
+                {
+                    return OrderQueue[0];
+                }
+                else
+                {
+                    return new Order(OrderType.None, Location);
+                }
+            }
+        }
         public bool CanShoot { get; set; }
 
         public int MaxHP { get; set; }
@@ -42,6 +57,8 @@ namespace Contingency.Units
         public bool Selected { get; set; }
 
         public float ShootRate { get; set; }
+
+        public int ShotCount { get; set; }
 
         public string Team { get; set; }
 
@@ -90,6 +107,8 @@ namespace Contingency.Units
 
                 CanShoot = false;
                 projectiles.Add(p);
+
+                ShotCount++;
             }
         }
     }
