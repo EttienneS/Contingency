@@ -1,10 +1,18 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using System;
+using System.Runtime.Serialization;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
+    [Serializable]
     public class Projectile : Sprite
     {
         private Texture2D Sprite { get; set; }
+
+         public Projectile(SerializationInfo information, StreamingContext context)
+        {
+            Deserialize(information,context);
+        }
 
         public Projectile(Texture2D sprite)
         {

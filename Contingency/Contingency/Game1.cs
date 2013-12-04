@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,15 +17,17 @@ namespace Contingency
     /// </summary>
     public class Game1 : Game
     {
-        private readonly List<Block> _blocks = new List<Block>();
-        private readonly List<Explosion> _explosions = new List<Explosion>();
-        private readonly List<Unit> _units = new List<Unit>();
+        // private readonly List<Block> GameState.Blocks = new List<Block>();
+        // private readonly List<Explosion> GameState.Explosions = new List<Explosion>();
+        // private readonly List<Unit> GameState.Units = new List<Unit>();
+        // private List<Projectile> GameState.Projectiles = new List<Projectile>();
+
+        public GameState GameState = new GameState();
         private GraphicsDeviceManager _graphics;
         private Texture2D _lineTexture;
         private Menu _menu = new Menu();
         private MouseState _mouseStateCurrent, _mouseStatePrevious;
         private bool _paused = true;
-        private List<Projectile> _projectiles = new List<Projectile>();
         private SpriteBatch _spriteBatch;
 
         #region Init
@@ -56,19 +62,56 @@ namespace Contingency
             // spawn units
             for (int i = 0; i < 10; i++)
             {
-                Unit red = new Unit(20, 20, 40, 50 + i * 40, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 50, "red", SpriteList.ContentSprites["projectileRed"]);
-
+                Unit red = new Unit(20, 20, 15, 50 + i * 40, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 50, "red", SpriteList.ContentSprites["projectileRed"]);
                 red.CurrentAngle = red.CurrentAngle + (float)Math.PI;
                 red.TargetAngle = red.CurrentAngle;
-                _units.Add(red);
-                _units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 60, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 50, "blue", SpriteList.ContentSprites["projectileBlue"]));
+
+                GameState.Units.Add(red);
+                GameState.Units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 15, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 50, "blue", SpriteList.ContentSprites["projectileBlue"]));
             }
 
-            //for (int i = 0; i <40; i++)
-            //{
-            //    _blocks.Add(new Block(new Vector2(80, 40 + i * 10)));
-            //    _blocks.Add(new Block(new Vector2(GraphicsDevice.Viewport.Width - 100, 40 + i *10)));
-            //}
+            while (GameState.Blocks.Count < 400)
+            {
+                int x = Helper.Rand.Next(0, GraphicsDevice.Viewport.Width);
+                int y = Helper.Rand.Next(0, GraphicsDevice.Viewport.Height);
+
+                Vector2 v = new Vector2(x, y);
+                int w = Helper.Rand.Next(0, 8);
+                int h = Helper.Rand.Next(0, 8);
+
+                bool invalid = false;
+                foreach (Unit u in GameState.Units)
+                {
+                    if (u.Touches(v, w * 10) || u.Touches(v, h * 10))
+                    {
+                        invalid = true;
+                    }
+                }
+                foreach (Block b in GameState.Blocks)
+                {
+                    if (b.Touches(v, w * 10) || b.Touches(v, h * 10))
+                    {
+                        invalid = true;
+                    }
+                }
+
+                if (!invalid)
+                {
+                    for (int width = 0; width < w; width++)
+                    {
+                        for (int height = 0; height < h; height++)
+                        {
+                            Vector2 location = new Vector2(v.X + width * 10, v.Y + height * 10);
+                            GameState.Blocks.Add(new Block(location));
+                        }
+                    }
+                }
+            }
+
+            // save / load example
+            // MemoryStream state = SaveState();
+            // GameState = new GameState();
+            // GameState = LoadState(state);
         }
 
         protected override void UnloadContent()
@@ -77,7 +120,29 @@ namespace Contingency
 
         #endregion Init
 
+        #region State Load/Save
+
+        public MemoryStream SaveState()
+        {
+            MemoryStream stream = new MemoryStream();
+            BinaryFormatter bformatter = new BinaryFormatter();
+            bformatter.Serialize(stream, GameState);
+
+            return stream;
+        }
+
+        public GameState LoadState(MemoryStream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            return (GameState)new BinaryFormatter().Deserialize(stream);
+        }
+
+        #endregion
+
+
         #region Drawing
+
+        public bool MenuMode = true;
 
         protected override void Draw(GameTime gameTime)
         {
@@ -85,17 +150,24 @@ namespace Contingency
 
             _spriteBatch.Begin();
 
-            DrawMenu();
+            if (!MenuMode)
+            {
+                DrawMenu();
 
-            DrawText();
+                DrawText();
 
-            DrawBlocks();
+                DrawBlocks();
 
-            DrawProjectiles();
+                DrawProjectiles();
 
-            DrawUnits();
+                DrawUnits();
 
-            DrawExplosions();
+                DrawExplosions();
+            }
+            else
+            {
+                _spriteBatch.Draw(SpriteList.ContentSprites["start"], new Vector2(100, 100), Color.White);
+            }
 
             _spriteBatch.End();
             base.Draw(gameTime);
@@ -103,7 +175,7 @@ namespace Contingency
 
         private void DrawBlocks()
         {
-            foreach (Block b in _blocks)
+            foreach (Block b in GameState.Blocks)
             {
                 _spriteBatch.Draw(b.GetSprite(), b.Location, null, Color.White, b.CurrentAngle, new Vector2(b.Width / 2, b.Height / 2), 1.0f, SpriteEffects.None, 0f);
             }
@@ -111,7 +183,7 @@ namespace Contingency
 
         private void DrawExplosions()
         {
-            foreach (Explosion exp in _explosions)
+            foreach (Explosion exp in GameState.Explosions)
             {
                 _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.SpriteWidth, exp.SpriteHeight), exp.SpriteRect, Color.White);
             }
@@ -142,7 +214,7 @@ namespace Contingency
 
         private void DrawProjectiles()
         {
-            foreach (Projectile sprite in _projectiles)
+            foreach (Projectile sprite in GameState.Projectiles)
             {
                 _spriteBatch.Draw(sprite.GetSprite(), sprite.Location, null, Color.White, sprite.CurrentAngle, new Vector2(sprite.Width / 2, sprite.Height / 2), 1.0f, SpriteEffects.None, 0f);
             }
@@ -150,12 +222,12 @@ namespace Contingency
 
         private void DrawText()
         {
-            _spriteBatch.DrawString(SpriteList.Font, "Red", new Vector2(0, 0), Color.White);
+            // _spriteBatch.DrawString(SpriteList.Font, "Red", new Vector2(0, 0), Color.White);
         }
 
         private void DrawUnits()
         {
-            foreach (Unit u in _units)
+            foreach (Unit u in GameState.Units)
             {
                 _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
 
@@ -167,7 +239,7 @@ namespace Contingency
                 DrawLine(_spriteBatch, startPoint, endPointHp, Color.LimeGreen, 3);
             }
 
-            foreach (Unit u in _units)
+            foreach (Unit u in GameState.Units)
             {
                 for (int i = 0; i < u.OrderQueue.Count; i++)
                 {
@@ -188,7 +260,7 @@ namespace Contingency
                         Vector2 lastMoveLocation = u.Location;
                         for (int l = 0; l < i; l++)
                         {
-                            if (u.OrderQueue[l].Type == OrderType.Move )
+                            if (u.OrderQueue[l].Type == OrderType.Move)
                             {
                                 lastMoveLocation = u.OrderQueue[l].Target;
                             }
@@ -223,31 +295,46 @@ namespace Contingency
 
             _mouseStateCurrent = Mouse.GetState();
 
-            if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
+            if (!MenuMode)
             {
-                MouseClicked();
-            }
-            else if (_mouseStateCurrent.RightButton == ButtonState.Pressed && _mouseStatePrevious.RightButton == ButtonState.Released)
-            {
-                Unit selected = GetSelctedUnit();
-
-                if (selected != null)
+                if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
                 {
-                    selected.Selected = false;
-                    _menu.Visible = false;
+                    MouseClickedGame();
+                }
+                else if (_mouseStateCurrent.RightButton == ButtonState.Pressed && _mouseStatePrevious.RightButton == ButtonState.Released)
+                {
+                    Unit selected = GetSelctedUnit();
+
+                    if (selected != null)
+                    {
+                        selected.Selected = false;
+                        _menu.Visible = false;
+                    }
+                }
+            }
+            else
+            {
+                if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
+                {
+                    MouseClickedMenu();
                 }
             }
 
             _mouseStatePrevious = _mouseStateCurrent;
         }
 
-        private void MouseClicked()
+        private void MouseClickedMenu()
+        {
+            MenuMode = false;
+        }
+
+        private void MouseClickedGame()
         {
             Unit selectedUnit = GetSelctedUnit();
 
             if (selectedUnit == null)
             {
-                foreach (Unit u in _units)
+                foreach (Unit u in GameState.Units)
                 {
                     if (u.Touches(new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y), 2.0))
                     {
@@ -273,12 +360,15 @@ namespace Contingency
                             case "Attack":
                                 selectedUnit.OrderQueue.Add(new Order(OrderType.Attack, mouseVector));
                                 break;
+
                             case "Move":
                                 selectedUnit.OrderQueue.Add(new Order(OrderType.Move, mouseVector));
                                 break;
+
                             case "Special":
                                 selectedUnit.OrderQueue.Clear();
                                 break;
+
                             case "Stop":
                                 Vector2 target = selectedUnit.Location;
 
@@ -294,8 +384,6 @@ namespace Contingency
             }
         }
 
-
-
         #endregion Porcess Input
 
         #region State Updates
@@ -306,36 +394,39 @@ namespace Contingency
 
             CatchInputs();
 
-            if (_paused)
-                return;
+            if (!MenuMode)
+            {
+                if (_paused)
+                    return;
 
-            UpdateExplosions(gameTime);
+                UpdateExplosions(gameTime);
 
-            UpdateUnits(gameTime);
+                UpdateUnits(gameTime);
 
-            UpdateProjectiles();
+                UpdateProjectiles();
 
-            UpdateDeaths();
+                UpdateDeaths();
+            }
         }
 
         private void UpdateDeaths()
         {
-            for (int i = 0; i < _units.Count; i++)
+            for (int i = 0; i < GameState.Units.Count; i++)
             {
-                if (_units[i].CurrentHP <= 0)
+                if (GameState.Units[i].CurrentHP <= 0)
                 {
-                    _explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(_units[i].Location.X - _units[i].Width / 2, _units[i].Location.Y - _units[i].Height / 2)));
-                    _units.RemoveAt(i);
+                    GameState.Explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(GameState.Units[i].Location.X - GameState.Units[i].Width / 2, GameState.Units[i].Location.Y - GameState.Units[i].Height / 2)));
+                    GameState.Units.RemoveAt(i);
                     i--;
                 }
             }
 
-            for (int i = 0; i < _blocks.Count; i++)
+            for (int i = 0; i < GameState.Blocks.Count; i++)
             {
-                if (_blocks[i].HP <= 0)
+                if (GameState.Blocks[i].CurrentHP <= 0)
                 {
-                    _explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(_blocks[i].Location.X - _blocks[i].Width / 2, _blocks[i].Location.Y - _blocks[i].Height / 2)));
-                    _blocks.RemoveAt(i);
+                    GameState.Explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(GameState.Blocks[i].Location.X - GameState.Blocks[i].Width / 2, GameState.Blocks[i].Location.Y - GameState.Blocks[i].Height / 2)));
+                    GameState.Blocks.RemoveAt(i);
                     i--;
                 }
             }
@@ -343,12 +434,12 @@ namespace Contingency
 
         private void UpdateExplosions(GameTime gameTime)
         {
-            for (int x = 0; x < _explosions.Count; x++)
+            for (int x = 0; x < GameState.Explosions.Count; x++)
             {
-                Explosion exp = _explosions[x];
+                Explosion exp = GameState.Explosions[x];
                 if (exp.Done)
                 {
-                    _explosions.Remove(exp);
+                    GameState.Explosions.Remove(exp);
                     x--;
                 }
                 else
@@ -362,7 +453,7 @@ namespace Contingency
         {
             List<Projectile> killSprites = new List<Projectile>();
 
-            foreach (Projectile p in _projectiles)
+            foreach (Projectile p in GameState.Projectiles)
             {
                 if (p.Location.X < 0 || p.Location.X > GraphicsDevice.Viewport.Width || p.Location.Y > GraphicsDevice.Viewport.Height || p.Location.Y < 0 || (p.Momentum.X == 0 && p.Momentum.Y == 0))
                 {
@@ -372,7 +463,7 @@ namespace Contingency
                 p.UpdateState();
 
                 bool hitUnit = false;
-                foreach (Unit u in _units)
+                foreach (Unit u in GameState.Units)
                 {
                     if (u.Touches(p) && p.Owner != u)
                     {
@@ -384,7 +475,7 @@ namespace Contingency
 
                 if (!hitUnit)
                 {
-                    foreach (Block b in _blocks)
+                    foreach (Block b in GameState.Blocks)
                     {
                         if (b.Touches(p) && p.Owner != b.Owner)
                         {
@@ -397,20 +488,21 @@ namespace Contingency
 
             foreach (Projectile x in killSprites)
             {
-                _projectiles.Remove(x);
+                GameState.Projectiles.Remove(x);
             }
         }
 
         private void UpdateUnits(GameTime gameTime)
         {
             float elapsed = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            foreach (Unit u in _units)
+            foreach (Unit u in GameState.Units)
             {
                 u.ReloadGun(elapsed);
 
                 switch (u.CurrentOrder.Type)
                 {
                     case OrderType.None:
+                        u.OrderComplete();
                         break;
 
                     case OrderType.Move:
@@ -429,12 +521,12 @@ namespace Contingency
                         {
                             u.Location = u.CurrentOrder.Target;
                             u.Momentum = new Vector2(0f);
-                            u.OrderQueue.RemoveAt(0);
+                            u.OrderComplete();
                         }
 
                         if (u.Momentum.X > 0f || u.Momentum.Y > 0f)
                         {
-                            foreach (Block b in _blocks)
+                            foreach (Block b in GameState.Blocks)
                             {
                                 if (u.Touches(b))
                                 {
@@ -452,13 +544,13 @@ namespace Contingency
 
                         if (u.CurrentAngle == u.TargetAngle)
                         {
-                            u.Shoot(ref _projectiles);
+                            u.Shoot(ref GameState.Projectiles);
                         }
 
                         if (u.ShotCount == 5)
                         {
                             u.ShotCount = 0;
-                            u.OrderQueue.RemoveAt(0);
+                            u.OrderComplete();
                         }
                         break;
                 }
@@ -471,7 +563,7 @@ namespace Contingency
 
         private Unit GetSelctedUnit()
         {
-            foreach (Unit unit in _units)
+            foreach (Unit unit in GameState.Units)
             {
                 if (unit.Selected)
                 {

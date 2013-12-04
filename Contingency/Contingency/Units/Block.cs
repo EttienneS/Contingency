@@ -1,12 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
+    [Serializable]
     public class Block : Sprite
     {
-        public int HP { get; set; }
-
+       
         public string Team { get; set; }
 
         public Unit Owner { get; set; }
@@ -16,7 +18,7 @@ namespace Contingency.Units
             if (Team == p.Owner.Team)
                 p.Damage = 0;
 
-            HP -= p.Damage;
+            CurrentHP -= p.Damage;
             p.Momentum = new Vector2(0f);
         }
 
@@ -31,7 +33,13 @@ namespace Contingency.Units
             Width = 10;
             Height = 10;
             CollisionRadius = 5;
-            HP = 10;
+            MaxHP = 10;
+            CurrentHP = MaxHP;
+        }
+
+        public Block(SerializationInfo information, StreamingContext context)
+        {
+            Deserialize(information,context);
         }
     }
 }

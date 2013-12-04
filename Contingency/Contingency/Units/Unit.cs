@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
+    [Serializable]
     public class Unit : Sprite
     {
         public List<Order> OrderQueue; 
@@ -13,6 +15,11 @@ namespace Contingency.Units
         private readonly Texture2D _selectedSprite;
         private readonly Texture2D _sprite;
         private float _timer;
+
+        public Unit(SerializationInfo information, StreamingContext context)
+        {
+            Deserialize(information,context);
+        }
 
         public Unit(int width, int height, int x, int y, Texture2D sprite, Texture2D selectedSprite, int maxHp, string teamName, Texture2D bulletSprite)
         {
@@ -50,9 +57,6 @@ namespace Contingency.Units
             }
         }
         public bool CanShoot { get; set; }
-
-        public int MaxHP { get; set; }
-        public int CurrentHP { get; set; }
 
         public bool Selected { get; set; }
 
@@ -111,5 +115,17 @@ namespace Contingency.Units
                 ShotCount++;
             }
         }
+
+        internal void OrderComplete()
+        {
+            if (OrderQueue.Count > 0)
+            {
+                if (OrderQueue.Count == 1 && CurrentOrder.Type == OrderType.Attack)
+                    return; // do not remove last order if its an attack order
+
+                OrderQueue.RemoveAt(0);
+            }
+        }
+
     }
 }

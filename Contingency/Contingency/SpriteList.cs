@@ -23,6 +23,7 @@ namespace Contingency
             ContentSprites.Add("targetAttack", content.Load<Texture2D>("targetAttack"));
             ContentSprites.Add("block", content.Load<Texture2D>("block"));
             ContentSprites.Add("menu", content.Load<Texture2D>("menu"));
+            ContentSprites.Add("start", content.Load<Texture2D>("start"));
 
             Font = content.Load<SpriteFont>("Font");
         }

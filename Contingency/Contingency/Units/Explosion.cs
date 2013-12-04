@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    internal class Explosion : Sprite
+    [Serializable]
+    public class Explosion : Sprite
     {
         private int curFrameX;
         private int curFrameY;
@@ -20,6 +22,11 @@ namespace Contingency.Units
         public readonly int SpriteWidth;
 
         public float timer;
+
+        public Explosion(SerializationInfo information, StreamingContext context)
+        {
+            Deserialize(information,context);
+        }
 
         public Explosion(Texture2D sprite, Vector2 location)
         {
