@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -6,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Contingency.Units
 {
     [Serializable]
-    public abstract class Sprite : ISerializable
+    public abstract class Sprite 
     {
         public Sprite(){}
 
@@ -17,6 +18,9 @@ namespace Contingency.Units
         public int MaxHP { get; set; }
         public int CurrentHP { get; set; }
 
+        public string Team { get; set; }
+
+        
         private double _collisionRadius;
 
         public double CollisionRadius
@@ -137,22 +141,6 @@ namespace Contingency.Units
             Location += Momentum;
         }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Location", Location);
-            info.AddValue("CurrentAngle", CurrentAngle);
-            info.AddValue("Momentum", Momentum);
-            info.AddValue("MaxHP", MaxHP);
-            info.AddValue("CurrentHP", CurrentHP);
-        }
-
-        protected void Deserialize(SerializationInfo information, StreamingContext context)
-        {
-            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
-            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
-            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
-            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
-            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
-        }
+        
     }
 }

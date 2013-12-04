@@ -1,8 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Contingency
 {
-    public class Order
+    [Serializable]
+    public class Order : ISerializable
     {
         public OrderType Type { get; set; }
 
@@ -12,6 +15,18 @@ namespace Contingency
         {
             Type = type;
             Target = target;
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Type", Type);
+            info.AddValue("Target", Target);
+        }
+
+        public Order(SerializationInfo information, StreamingContext context)
+        {
+            Type = (OrderType)information.GetValue("Type", typeof(OrderType));
+            Target = (Vector2)information.GetValue("Target", typeof(Vector2));
         }
     }
 

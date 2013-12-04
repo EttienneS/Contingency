@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Contingency.Units
 {
     [Serializable]
-    public class Explosion : Sprite
+    public class Explosion : Sprite, ISerializable
     {
         private int curFrameX;
         private int curFrameY;
@@ -25,12 +25,27 @@ namespace Contingency.Units
 
         public Explosion(SerializationInfo information, StreamingContext context)
         {
-            Deserialize(information,context);
+            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
+            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
+            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
+            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
+            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
+            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
+            Height = (int)information.GetValue("Height", typeof(int));
+            Width = (int)information.GetValue("Width", typeof(int));
+            Team = (string)information.GetValue("Team", typeof(string));
+            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
+
+            SpriteHeight = (int)information.GetValue("SpriteHeight", typeof(int));
+            SpriteWidth = (int)information.GetValue("SpriteWidth", typeof(int));
+            SpriteRect = (Rectangle)information.GetValue("SpriteRect", typeof(Rectangle));
+            timer = (float)information.GetValue("timer", typeof(float));
+            curFrameX = (int)information.GetValue("curFrameX", typeof(int));
+            curFrameY = (int)information.GetValue("curFrameY", typeof(int));
         }
 
-        public Explosion(Texture2D sprite, Vector2 location)
+        public Explosion(Vector2 location)
         {
-            SpriteSheet = sprite;
             SpriteWidth = SpriteSheet.Width / (int)Math.Sqrt(ImageNbr);
             SpriteHeight = SpriteSheet.Height / (int)Math.Sqrt(ImageNbr);
             SpriteRect = new Rectangle(curFrameX * SpriteWidth, 0, SpriteWidth, SpriteHeight);
@@ -40,7 +55,13 @@ namespace Contingency.Units
 
         public bool Done { get; set; }
 
-        public Texture2D SpriteSheet { get; set; }
+        public Texture2D SpriteSheet
+        {
+            get
+            {
+                return SpriteList.ContentSprites["explosion"];
+            }
+        }
 
         public override Texture2D GetSprite()
         {
@@ -69,6 +90,26 @@ namespace Contingency.Units
             {
                 Done = true;
             }
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Location", Location);
+            info.AddValue("CurrentAngle", CurrentAngle);
+            info.AddValue("TargetAngle", TargetAngle);
+            info.AddValue("Momentum", Momentum);
+            info.AddValue("MaxHP", MaxHP);
+            info.AddValue("CurrentHP", CurrentHP);
+            info.AddValue("Team", Team);
+            info.AddValue("CollisionRadius", CollisionRadius);
+            info.AddValue("Height", Height);
+            info.AddValue("Width", Width);
+            info.AddValue("SpriteHeight", SpriteHeight);
+            info.AddValue("SpriteRect", SpriteRect);
+            info.AddValue("SpriteWidth", SpriteWidth);
+            info.AddValue("timer", timer);
+            info.AddValue("curFrameX", curFrameX);
+            info.AddValue("curFrameY", curFrameY);
         }
     }
 }

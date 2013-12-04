@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -62,12 +63,12 @@ namespace Contingency
             // spawn units
             for (int i = 0; i < 10; i++)
             {
-                Unit red = new Unit(20, 20, 15, 50 + i * 40, SpriteList.ContentSprites["unitRed"], SpriteList.ContentSprites["unitRedSelected"], 50, "red", SpriteList.ContentSprites["projectileRed"]);
+                Unit red = new Unit(20, 20, 15, 50 + i * 40, 50, "red");
                 red.CurrentAngle = red.CurrentAngle + (float)Math.PI;
                 red.TargetAngle = red.CurrentAngle;
 
                 GameState.Units.Add(red);
-                GameState.Units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 15, 50 + i * 40, SpriteList.ContentSprites["unitBlue"], SpriteList.ContentSprites["unitBlueSelected"], 50, "blue", SpriteList.ContentSprites["projectileBlue"]));
+                GameState.Units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 15, 50 + i * 40, 50, "blue"));
             }
 
             while (GameState.Blocks.Count < 400)
@@ -108,10 +109,15 @@ namespace Contingency
                 }
             }
 
-            // save / load example
-            // MemoryStream state = SaveState();
-            // GameState = new GameState();
-            // GameState = LoadState(state);
+            Thread listener = new Thread(SocketManager.StartListening);
+            listener.Start();
+            SocketManager.DataRecieved += SocketManager_DataRecieved;
+        }
+
+        void SocketManager_DataRecieved(object sender, EventArgs e)
+        {
+            MemoryStream stream = new MemoryStream(((GameStateDataEventArgs)e).Data);
+            GameState = LoadState(stream);
         }
 
         protected override void UnloadContent()
@@ -216,7 +222,8 @@ namespace Contingency
         {
             foreach (Projectile sprite in GameState.Projectiles)
             {
-                _spriteBatch.Draw(sprite.GetSprite(), sprite.Location, null, Color.White, sprite.CurrentAngle, new Vector2(sprite.Width / 2, sprite.Height / 2), 1.0f, SpriteEffects.None, 0f);
+                if (sprite != null)
+                    _spriteBatch.Draw(sprite.GetSprite(), sprite.Location, null, Color.White, sprite.CurrentAngle, new Vector2(sprite.Width / 2, sprite.Height / 2), 1.0f, SpriteEffects.None, 0f);
             }
         }
 
@@ -282,7 +289,23 @@ namespace Contingency
         private void CatchInputs()
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                // save / load example
+                MemoryStream state = SaveState();
+                state.Seek(0, SeekOrigin.Begin);
+                using (FileStream file = new FileStream(@"c:\file.bin", FileMode.Create, FileAccess.Write))
+                {
+
+                    byte[] bytes = new byte[state.Length];
+                    state.Read(bytes, 0, (int)state.Length);
+                    file.Write(bytes, 0, bytes.Length);
+                    //state.Close();
+                }
+                GameState = new GameState();
+                GameState = LoadState(state);
+
                 Exit();
+            }
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
@@ -415,7 +438,7 @@ namespace Contingency
             {
                 if (GameState.Units[i].CurrentHP <= 0)
                 {
-                    GameState.Explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(GameState.Units[i].Location.X - GameState.Units[i].Width / 2, GameState.Units[i].Location.Y - GameState.Units[i].Height / 2)));
+                    GameState.Explosions.Add(new Explosion(new Vector2(GameState.Units[i].Location.X - GameState.Units[i].Width / 2, GameState.Units[i].Location.Y - GameState.Units[i].Height / 2)));
                     GameState.Units.RemoveAt(i);
                     i--;
                 }
@@ -425,7 +448,7 @@ namespace Contingency
             {
                 if (GameState.Blocks[i].CurrentHP <= 0)
                 {
-                    GameState.Explosions.Add(new Explosion(SpriteList.ContentSprites["explosion"], new Vector2(GameState.Blocks[i].Location.X - GameState.Blocks[i].Width / 2, GameState.Blocks[i].Location.Y - GameState.Blocks[i].Height / 2)));
+                    GameState.Explosions.Add(new Explosion(new Vector2(GameState.Blocks[i].Location.X - GameState.Blocks[i].Width / 2, GameState.Blocks[i].Location.Y - GameState.Blocks[i].Height / 2)));
                     GameState.Blocks.RemoveAt(i);
                     i--;
                 }
