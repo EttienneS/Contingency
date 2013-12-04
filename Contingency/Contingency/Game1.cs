@@ -183,7 +183,8 @@ namespace Contingency
         {
             foreach (Block b in GameState.Blocks)
             {
-                _spriteBatch.Draw(b.GetSprite(), b.Location, null, Color.White, b.CurrentAngle, new Vector2(b.Width / 2, b.Height / 2), 1.0f, SpriteEffects.None, 0f);
+                if (b != null)
+                    _spriteBatch.Draw(b.GetSprite(), b.Location, null, Color.White, b.CurrentAngle, new Vector2(b.Width / 2, b.Height / 2), 1.0f, SpriteEffects.None, 0f);
             }
         }
 
@@ -191,7 +192,8 @@ namespace Contingency
         {
             foreach (Explosion exp in GameState.Explosions)
             {
-                _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.SpriteWidth, exp.SpriteHeight), exp.SpriteRect, Color.White);
+                if (exp != null)
+                    _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32, (int)exp.Location.Y - 32, exp.SpriteWidth, exp.SpriteHeight), exp.SpriteRect, Color.White);
             }
         }
 
@@ -236,14 +238,18 @@ namespace Contingency
         {
             foreach (Unit u in GameState.Units)
             {
-                _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
+                if (u != null)
+                {
+                    _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width/2, u.Height/2), 1.0f, SpriteEffects.None, 0f);
 
-                Vector2 startPoint = new Vector2(u.Location.X - u.Width / 2, u.Location.Y - 15);
-                Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
-                Vector2 endPointHp = new Vector2(startPoint.X + (u.Width * ((float)u.CurrentHP / (float)u.MaxHP)), u.Location.Y - 15);
+                    Vector2 startPoint = new Vector2(u.Location.X - u.Width/2, u.Location.Y - 15);
+                    Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
+                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width*((float) u.CurrentHP/(float) u.MaxHP)),
+                        u.Location.Y - 15);
 
-                DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
-                DrawLine(_spriteBatch, startPoint, endPointHp, Color.LimeGreen, 3);
+                    DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
+                    DrawLine(_spriteBatch, startPoint, endPointHp, Color.LimeGreen, 3);
+                }
             }
 
             foreach (Unit u in GameState.Units)

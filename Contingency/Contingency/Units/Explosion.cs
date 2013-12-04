@@ -38,7 +38,13 @@ namespace Contingency.Units
 
             SpriteHeight = (int)information.GetValue("SpriteHeight", typeof(int));
             SpriteWidth = (int)information.GetValue("SpriteWidth", typeof(int));
-            SpriteRect = (Rectangle)information.GetValue("SpriteRect", typeof(Rectangle));
+
+            int x = (int)information.GetValue("SpriteRectX", typeof(int));
+            int y = (int)information.GetValue("SpriteRectY", typeof(int));
+            int w = (int)information.GetValue("SpriteRectW", typeof(int));
+            int h = (int)information.GetValue("SpriteRectH", typeof(int));
+
+            SpriteRect = new Rectangle(x, y, w, h);
             timer = (float)information.GetValue("timer", typeof(float));
             curFrameX = (int)information.GetValue("curFrameX", typeof(int));
             curFrameY = (int)information.GetValue("curFrameY", typeof(int));
@@ -105,11 +111,17 @@ namespace Contingency.Units
             info.AddValue("Height", Height);
             info.AddValue("Width", Width);
             info.AddValue("SpriteHeight", SpriteHeight);
-            info.AddValue("SpriteRect", SpriteRect);
+
             info.AddValue("SpriteWidth", SpriteWidth);
             info.AddValue("timer", timer);
             info.AddValue("curFrameX", curFrameX);
             info.AddValue("curFrameY", curFrameY);
+
+
+            info.AddValue("SpriteRectX", SpriteRect.X);
+            info.AddValue("SpriteRectY", SpriteRect.Y);
+            info.AddValue("SpriteRectW", SpriteRect.Width);
+            info.AddValue("SpriteRectH", SpriteRect.Height);
         }
     }
 }
