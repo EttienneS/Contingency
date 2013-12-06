@@ -1,29 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
     [Serializable]
-    public abstract class Sprite 
+    public abstract class Sprite
     {
-        public Sprite(){}
+        private const float TurnSpeed = 0.05f;
 
         public Vector2 Momentum = new Vector2(0f);
+
         public float TargetAngle;
-        public const float TurnSpeed = 0.05f;
 
-        public int MaxHP { get; set; }
-        public int CurrentHP { get; set; }
-
-        public string Team { get; set; }
-
-        
         private double _collisionRadius;
 
-        public double CollisionRadius
+        protected Sprite()
+        {
+        }
+
+        protected double CollisionRadius
         {
             get
             {
@@ -41,9 +37,15 @@ namespace Contingency.Units
 
         public float CurrentAngle { get; set; }
 
+        public int CurrentHP { get; set; }
+
         public int Height { get; set; }
 
         public Vector2 Location { get; set; }
+
+        public int MaxHP { get; set; }
+
+        public string Team { get; set; }
 
         public int Width { get; set; }
 
@@ -66,20 +68,16 @@ namespace Contingency.Units
 
         public bool Touches(Vector2 location, double radius)
         {
-            Vector2 Distance = this.Location - location;
-            if (Distance.Length() < this.CollisionRadius + radius) // if the distance is less than the diameter
-                return true;
-            return false;
+            Vector2 distance = Location - location;
+            return distance.Length() < CollisionRadius + radius;
         }
 
         public bool TouchesWithOffset(Vector2 location, double radius, float offset)
         {
             location = new Vector2(location.X - offset, location.Y - offset);
 
-            Vector2 Distance = this.Location - location;
-            if (Distance.Length() < this.CollisionRadius + radius) // if the distance is less than the diameter
-                return true;
-            return false;
+            Vector2 distance = Location - location;
+            return distance.Length() < CollisionRadius + radius;
         }
 
         public void UpdateState()
@@ -132,7 +130,7 @@ namespace Contingency.Units
             {
                 //need to move currentAngle towards targetAngle
                 //direction to move has been calculated  in the previous section
-                if (increasingAngle == true)
+                if (increasingAngle)
                     CurrentAngle += TurnSpeed;
                 else
                     CurrentAngle -= TurnSpeed;
@@ -140,7 +138,5 @@ namespace Contingency.Units
 
             Location += Momentum;
         }
-
-        
     }
 }

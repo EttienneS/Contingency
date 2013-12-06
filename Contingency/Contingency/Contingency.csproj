@@ -89,6 +89,9 @@
     <Content Include="Content\block.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\join.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\menu.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

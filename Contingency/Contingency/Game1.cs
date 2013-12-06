@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -18,18 +16,18 @@ namespace Contingency
     /// </summary>
     public class Game1 : Game
     {
-        // private readonly List<Block> GameState.Blocks = new List<Block>();
-        // private readonly List<Explosion> GameState.Explosions = new List<Explosion>();
-        // private readonly List<Unit> GameState.Units = new List<Unit>();
-        // private List<Projectile> GameState.Projectiles = new List<Projectile>();
-
-        public GameState GameState = new GameState();
+        private GameState _gameState = new GameState();
         private GraphicsDeviceManager _graphics;
         private Texture2D _lineTexture;
-        private Menu _menu = new Menu();
+        private readonly Menu _menu = new Menu();
         private MouseState _mouseStateCurrent, _mouseStatePrevious;
         private bool _paused = true;
         private SpriteBatch _spriteBatch;
+        private const int TotalPlanningTime = 15000;
+        private const int TotalPlayTime = 5000;
+        private int _remainingPlanningTime = TotalPlanningTime;
+        private int _remainingPlayTime = TotalPlayTime;
+        private bool _menuMode = true;
 
         #region Init
 
@@ -114,41 +112,40 @@ namespace Contingency
             SocketManager.DataRecieved += SocketManager_DataRecieved;
         }
 
-        void SocketManager_DataRecieved(object sender, EventArgs e)
-        {
-            MemoryStream stream = new MemoryStream(((GameStateDataEventArgs)e).Data);
-            GameState = LoadState(stream);
-        }
-
         protected override void UnloadContent()
         {
         }
 
         #endregion Init
 
-        #region State Load/Save
+        #region State Load/Save/IO
 
-        public MemoryStream SaveState()
+        private MemoryStream SaveState()
         {
             MemoryStream stream = new MemoryStream();
             BinaryFormatter bformatter = new BinaryFormatter();
-            bformatter.Serialize(stream, GameState);
+            bformatter.Serialize(stream, _gameState);
 
             return stream;
         }
 
-        public GameState LoadState(MemoryStream stream)
+        private GameState LoadState(MemoryStream stream)
         {
             stream.Seek(0, SeekOrigin.Begin);
             return (GameState)new BinaryFormatter().Deserialize(stream);
         }
 
-        #endregion
+        private void SocketManager_DataRecieved(object sender, EventArgs e)
+        {
+            MemoryStream stream = new MemoryStream(((GameStateDataEventArgs)e).Data);
+            _gameState = LoadState(stream);
+        }
 
+        #endregion
 
         #region Drawing
 
-        public bool MenuMode = true;
+        
 
         protected override void Draw(GameTime gameTime)
         {
@@ -156,12 +153,8 @@ namespace Contingency
 
             _spriteBatch.Begin();
 
-            if (!MenuMode)
+            if (!_menuMode)
             {
-                DrawMenu();
-
-                DrawText();
-
                 DrawBlocks();
 
                 DrawProjectiles();
@@ -169,10 +162,15 @@ namespace Contingency
                 DrawUnits();
 
                 DrawExplosions();
+
+                DrawText();
+
+                DrawMenu();
             }
             else
             {
                 _spriteBatch.Draw(SpriteList.ContentSprites["start"], new Vector2(100, 100), Color.White);
+                _spriteBatch.Draw(SpriteList.ContentSprites["join"], new Vector2(100, 200), Color.White);
             }
 
             _spriteBatch.End();
@@ -231,7 +229,15 @@ namespace Contingency
 
         private void DrawText()
         {
-            // _spriteBatch.DrawString(SpriteList.Font, "Red", new Vector2(0, 0), Color.White);
+            if (_paused)
+            {
+                _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlanningTime).ToString(), new Vector2(300, 0), Color.LimeGreen);
+            }
+            else
+            {
+                _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlayTime).ToString(), new Vector2(300, 0), Color.Red);
+            }
+            
         }
 
         private void DrawUnits()
@@ -244,7 +250,7 @@ namespace Contingency
 
                     Vector2 startPoint = new Vector2(u.Location.X - u.Width/2, u.Location.Y - 15);
                     Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
-                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width*((float) u.CurrentHP/(float) u.MaxHP)),
+                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width*(u.CurrentHP/(float) u.MaxHP)),
                         u.Location.Y - 15);
 
                     DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
@@ -307,24 +313,15 @@ namespace Contingency
                     file.Write(bytes, 0, bytes.Length);
                     //state.Close();
                 }
-                GameState = new GameState();
-                GameState = LoadState(state);
+                _gameState = new GameState();
+                _gameState = LoadState(state);
 
                 Exit();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                _paused = false;
-            }
-            else
-            {
-                _paused = true;
-            }
-
             _mouseStateCurrent = Mouse.GetState();
 
-            if (!MenuMode)
+            if (!_menuMode)
             {
                 if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
                 {
@@ -354,7 +351,7 @@ namespace Contingency
 
         private void MouseClickedMenu()
         {
-            MenuMode = false;
+            _menuMode = false;
         }
 
         private void MouseClickedGame()
@@ -421,9 +418,35 @@ namespace Contingency
         {
             base.Update(gameTime);
 
-            CatchInputs();
+            if (_paused)
+            {
+                CatchInputs();
+                if (_remainingPlanningTime <= 0)
+                {
+                    _paused = false;
+                    _remainingPlanningTime = 0;
+                    _remainingPlayTime = TotalPlayTime;
+                }
+                else
+                {
+                    _remainingPlanningTime -= gameTime.ElapsedGameTime.Milliseconds;
+                }
+            }
+            else
+            {
+                if (_remainingPlayTime <= 0)
+                {
+                    _paused = true;
+                    _remainingPlayTime = 0;
+                    _remainingPlanningTime = TotalPlanningTime;
+                }
+                else
+                {
+                    _remainingPlayTime -= gameTime.ElapsedGameTime.Milliseconds;
+                }
+            }
 
-            if (!MenuMode)
+            if (!_menuMode)
             {
                 if (_paused)
                     return;
@@ -590,6 +613,8 @@ namespace Contingency
 
         #endregion State Updates
 
+        #region Helpers
+
         private Unit GetSelctedUnit()
         {
             foreach (Unit unit in GameState.Units)
@@ -602,5 +627,7 @@ namespace Contingency
 
             return null;
         }
+
+        #endregion
     }
 }

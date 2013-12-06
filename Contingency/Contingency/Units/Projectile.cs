@@ -8,7 +8,13 @@ namespace Contingency.Units
     [Serializable]
     public class Projectile : Sprite, ISerializable
     {
-        public Projectile(SerializationInfo information, StreamingContext context)
+        public Projectile()
+        {
+            Damage = 3;
+            CollisionRadius = Width / 2;
+        }
+
+        protected Projectile(SerializationInfo information, StreamingContext context)
         {
             Location = (Vector2)information.GetValue("Location", typeof(Vector2));
             CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
@@ -22,17 +28,6 @@ namespace Contingency.Units
             Owner = (Unit)information.GetValue("Owner", typeof(Unit));
             CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
             Damage = (int)information.GetValue("Damage", typeof(int));
-        }
-
-        public Projectile()
-        {
-            Damage = 3;
-            CollisionRadius = Width / 2;
-        }
-
-        public override Texture2D GetSprite()
-        {
-            return Owner.BulletSprite;
         }
 
         public int Damage { get; set; }
@@ -57,6 +52,11 @@ namespace Contingency.Units
             information.AddValue("Width", Width);
             information.AddValue("Owner", Owner);
             information.AddValue("Damage", Damage);
+        }
+
+        public override Texture2D GetSprite()
+        {
+            return Owner.BulletSprite;
         }
     }
 }

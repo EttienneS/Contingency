@@ -8,20 +8,14 @@ namespace Contingency.Units
     [Serializable]
     public class Explosion : Sprite, ISerializable
     {
-        private int curFrameX;
-        private int curFrameY;
-
-        public const int ImageNbr = 25;
-
-        public const float Interval = 40f;
-
         public readonly int SpriteHeight;
-
-        public Rectangle SpriteRect;
-
         public readonly int SpriteWidth;
-
-        public float timer;
+        public Rectangle SpriteRect;
+        private const int ImageNbr = 25;
+        private const float Interval = 40f;
+        private int _curFrameX;
+        private int _curFrameY;
+        private float _timer;
 
         public Explosion(SerializationInfo information, StreamingContext context)
         {
@@ -45,16 +39,16 @@ namespace Contingency.Units
             int h = (int)information.GetValue("SpriteRectH", typeof(int));
 
             SpriteRect = new Rectangle(x, y, w, h);
-            timer = (float)information.GetValue("timer", typeof(float));
-            curFrameX = (int)information.GetValue("curFrameX", typeof(int));
-            curFrameY = (int)information.GetValue("curFrameY", typeof(int));
+            _timer = (float)information.GetValue("timer", typeof(float));
+            _curFrameX = (int)information.GetValue("curFrameX", typeof(int));
+            _curFrameY = (int)information.GetValue("curFrameY", typeof(int));
         }
 
         public Explosion(Vector2 location)
         {
             SpriteWidth = SpriteSheet.Width / (int)Math.Sqrt(ImageNbr);
             SpriteHeight = SpriteSheet.Height / (int)Math.Sqrt(ImageNbr);
-            SpriteRect = new Rectangle(curFrameX * SpriteWidth, 0, SpriteWidth, SpriteHeight);
+            SpriteRect = new Rectangle(_curFrameX * SpriteWidth, 0, SpriteWidth, SpriteHeight);
 
             Location = location;
         }
@@ -66,35 +60,6 @@ namespace Contingency.Units
             get
             {
                 return SpriteList.ContentSprites["explosion"];
-            }
-        }
-
-        public override Texture2D GetSprite()
-        {
-            return SpriteSheet;
-        }
-
-        public void Update(float elapsedSeconds)
-        {
-            timer += elapsedSeconds;
-
-            if (timer >= Interval)
-            {
-                timer = 0;
-                curFrameX++;
-                if (curFrameX >= 5)
-                {
-                    curFrameX = 0;
-                    curFrameY++;
-                }
-            }
-
-            SpriteRect.X = curFrameX * SpriteWidth;
-            SpriteRect.Y = curFrameY * SpriteHeight;
-
-            if (curFrameY > 5)
-            {
-                Done = true;
             }
         }
 
@@ -113,15 +78,43 @@ namespace Contingency.Units
             info.AddValue("SpriteHeight", SpriteHeight);
 
             info.AddValue("SpriteWidth", SpriteWidth);
-            info.AddValue("timer", timer);
-            info.AddValue("curFrameX", curFrameX);
-            info.AddValue("curFrameY", curFrameY);
-
+            info.AddValue("timer", _timer);
+            info.AddValue("curFrameX", _curFrameX);
+            info.AddValue("curFrameY", _curFrameY);
 
             info.AddValue("SpriteRectX", SpriteRect.X);
             info.AddValue("SpriteRectY", SpriteRect.Y);
             info.AddValue("SpriteRectW", SpriteRect.Width);
             info.AddValue("SpriteRectH", SpriteRect.Height);
+        }
+
+        public override Texture2D GetSprite()
+        {
+            return SpriteSheet;
+        }
+
+        public void Update(float elapsedSeconds)
+        {
+            _timer += elapsedSeconds;
+
+            if (_timer >= Interval)
+            {
+                _timer = 0;
+                _curFrameX++;
+                if (_curFrameX >= 5)
+                {
+                    _curFrameX = 0;
+                    _curFrameY++;
+                }
+            }
+
+            SpriteRect.X = _curFrameX * SpriteWidth;
+            SpriteRect.Y = _curFrameY * SpriteHeight;
+
+            if (_curFrameY > 5)
+            {
+                Done = true;
+            }
         }
     }
 }

@@ -9,28 +9,6 @@ namespace Contingency.Units
     [Serializable]
     public class Unit : Sprite, ISerializable
     {
-        public List<Order> OrderQueue;
-
-        private float _timer;
-
-        public Unit(SerializationInfo information, StreamingContext context)
-        {
-            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
-            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
-            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
-            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
-            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
-            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
-            Height = (int)information.GetValue("Height", typeof(int));
-            Width = (int)information.GetValue("Width", typeof(int));
-            OrderQueue = (List<Order>)information.GetValue("OrderQueue", typeof(List<Order>));
-            Team = (string)information.GetValue("Team", typeof(string));
-            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
-            CanShoot = (bool)information.GetValue("CanShoot", typeof(bool));
-            ShootRate = (float)information.GetValue("ShootRate", typeof(float));
-            ShotCount = (int)information.GetValue("ShotCount", typeof(int));
-        }
-
         public Unit(int width, int height, int x, int y, int maxHp, string teamName)
         {
             Width = width;
@@ -48,6 +26,24 @@ namespace Contingency.Units
             CanShoot = true;
         }
 
+        protected Unit(SerializationInfo information, StreamingContext context)
+        {
+            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
+            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
+            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
+            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
+            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
+            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
+            Height = (int)information.GetValue("Height", typeof(int));
+            Width = (int)information.GetValue("Width", typeof(int));
+            OrderQueue = (List<Order>)information.GetValue("OrderQueue", typeof(List<Order>));
+            Team = (string)information.GetValue("Team", typeof(string));
+            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
+            CanShoot = (bool)information.GetValue("CanShoot", typeof(bool));
+            ShootRate = (float)information.GetValue("ShootRate", typeof(float));
+            ShotCount = (int)information.GetValue("ShotCount", typeof(int));
+        }
+
         public Texture2D BulletSprite
         {
             get
@@ -57,8 +53,6 @@ namespace Contingency.Units
                     : SpriteList.ContentSprites["projectileBlue"];
             }
         }
-
-        public bool CanShoot { get; set; }
 
         public Order CurrentOrder
         {
@@ -72,11 +66,18 @@ namespace Contingency.Units
             }
         }
 
+        public List<Order> OrderQueue { get; set; }
+
         public bool Selected { get; set; }
 
-        public float ShootRate { get; set; }
-
         public int ShotCount { get; set; }
+
+        private bool CanShoot { get; set; }
+
+        private float ShootRate { get; set; }
+
+        private float ShootTimer { get; set; }
+
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Location", Location);
@@ -94,6 +95,7 @@ namespace Contingency.Units
             info.AddValue("ShootRate", ShootRate);
             info.AddValue("ShotCount", ShotCount);
         }
+
         public override Texture2D GetSprite()
         {
             if (Team == "red")
@@ -107,11 +109,11 @@ namespace Contingency.Units
         {
             if (!CanShoot)
             {
-                _timer += elapsedMiliSeconds;
+                ShootTimer += elapsedMiliSeconds;
 
-                if (_timer > ShootRate)
+                if (ShootTimer > ShootRate)
                 {
-                    _timer = 0;
+                    ShootTimer = 0;
                     CanShoot = true;
                 }
             }
@@ -141,10 +143,10 @@ namespace Contingency.Units
         {
             if (CanShoot)
             {
-                Projectile p = new Projectile()
+                Projectile p = new Projectile
                 {
-                    TargetAngle = TargetAngle + (float)Helper.Rand.Next(-5, 5) / 100
-                };
+                    TargetAngle = TargetAngle + (float)Helper.Rand.Next(-3, 3) / 100
+                };  // add randomness to angle for long distance targeting
 
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -5, (float)Math.Sin(p.TargetAngle) * -5);
 

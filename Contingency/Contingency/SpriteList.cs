@@ -24,6 +24,7 @@ namespace Contingency
             ContentSprites.Add("block", content.Load<Texture2D>("block"));
             ContentSprites.Add("menu", content.Load<Texture2D>("menu"));
             ContentSprites.Add("start", content.Load<Texture2D>("start"));
+            ContentSprites.Add("join", content.Load<Texture2D>("join"));
 
             Font = content.Load<SpriteFont>("Font");
         }
