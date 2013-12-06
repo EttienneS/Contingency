@@ -11,9 +11,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Contingency
 {
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
     public class Game1 : Game
     {
         private GameState _gameState = new GameState();
@@ -28,6 +25,7 @@ namespace Contingency
         private int _remainingPlanningTime = TotalPlanningTime;
         private int _remainingPlayTime = TotalPlayTime;
         private bool _menuMode = true;
+        private const string CurrentTeam = "red";
 
         #region Init
 
@@ -141,11 +139,9 @@ namespace Contingency
             _gameState = LoadState(stream);
         }
 
-        #endregion
+        #endregion State Load/Save/IO
 
         #region Drawing
-
-        
 
         protected override void Draw(GameTime gameTime)
         {
@@ -237,7 +233,6 @@ namespace Contingency
             {
                 _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlayTime).ToString(), new Vector2(300, 0), Color.Red);
             }
-            
         }
 
         private void DrawUnits()
@@ -246,11 +241,11 @@ namespace Contingency
             {
                 if (u != null)
                 {
-                    _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width/2, u.Height/2), 1.0f, SpriteEffects.None, 0f);
+                    _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
 
-                    Vector2 startPoint = new Vector2(u.Location.X - u.Width/2, u.Location.Y - 15);
+                    Vector2 startPoint = new Vector2(u.Location.X - u.Width / 2, u.Location.Y - 15);
                     Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
-                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width*(u.CurrentHP/(float) u.MaxHP)),
+                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width * (u.CurrentHP / (float)u.MaxHP)),
                         u.Location.Y - 15);
 
                     DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
@@ -307,7 +302,6 @@ namespace Contingency
                 state.Seek(0, SeekOrigin.Begin);
                 using (FileStream file = new FileStream(@"c:\file.bin", FileMode.Create, FileAccess.Write))
                 {
-
                     byte[] bytes = new byte[state.Length];
                     state.Read(bytes, 0, (int)state.Length);
                     file.Write(bytes, 0, bytes.Length);
@@ -362,7 +356,7 @@ namespace Contingency
             {
                 foreach (Unit u in GameState.Units)
                 {
-                    if (u.Touches(new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y), 2.0))
+                    if (u.Touches(new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y), 2.0) && u.Team == CurrentTeam)
                     {
                         u.Selected = !u.Selected;
                         break;
@@ -461,7 +455,7 @@ namespace Contingency
             }
         }
 
-        private void UpdateDeaths()
+        private static void UpdateDeaths()
         {
             for (int i = 0; i < GameState.Units.Count; i++)
             {
@@ -484,7 +478,7 @@ namespace Contingency
             }
         }
 
-        private void UpdateExplosions(GameTime gameTime)
+        private static void UpdateExplosions(GameTime gameTime)
         {
             for (int x = 0; x < GameState.Explosions.Count; x++)
             {
@@ -615,7 +609,7 @@ namespace Contingency
 
         #region Helpers
 
-        private Unit GetSelctedUnit()
+        private static Unit GetSelctedUnit()
         {
             foreach (Unit unit in GameState.Units)
             {
@@ -628,6 +622,6 @@ namespace Contingency
             return null;
         }
 
-        #endregion
+        #endregion Helpers
     }
 }

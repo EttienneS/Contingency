@@ -8,25 +8,6 @@ namespace Contingency.Units
     [Serializable]
     public class Block : Sprite, ISerializable
     {
-       
-        public string Team { get; set; }
-
-        public Unit Owner { get; set; }
-
-        internal void Hit(Projectile p)
-        {
-            if (Team == p.Owner.Team)
-                p.Damage = 0;
-
-            CurrentHP -= p.Damage;
-            p.Momentum = new Vector2(0f);
-        }
-
-        public override Texture2D GetSprite()
-        {
-            return SpriteList.ContentSprites["block"];
-        }
-
         public Block(Vector2 location)
         {
             Location = location;
@@ -37,9 +18,9 @@ namespace Contingency.Units
             CurrentHP = MaxHP;
         }
 
-        public Block(SerializationInfo information, StreamingContext context)
+        protected Block(SerializationInfo information, StreamingContext context)
         {
-           Location = (Vector2)information.GetValue("Location", typeof(Vector2));
+            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
             CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
             TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
             Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
@@ -51,6 +32,8 @@ namespace Contingency.Units
             Owner = (Unit)information.GetValue("Owner", typeof(Unit));
             CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
         }
+
+        public Unit Owner { get; private set; }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
@@ -65,6 +48,20 @@ namespace Contingency.Units
             info.AddValue("CollisionRadius", CollisionRadius);
             info.AddValue("Height", Height);
             info.AddValue("Width", Width);
+        }
+
+        public override Texture2D GetSprite()
+        {
+            return SpriteList.ContentSprites["block"];
+        }
+
+        internal void Hit(Projectile p)
+        {
+            if (Team == p.Owner.Team)
+                p.Damage = 0;
+
+            CurrentHP -= p.Damage;
+            p.Momentum = new Vector2(0f);
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Contingency.Units
 
         protected Unit(SerializationInfo information, StreamingContext context)
         {
+            OrderQueue = new List<Order>();
+
             Location = (Vector2)information.GetValue("Location", typeof(Vector2));
             CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
             TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
@@ -66,7 +68,7 @@ namespace Contingency.Units
             }
         }
 
-        public List<Order> OrderQueue { get; set; }
+        public List<Order> OrderQueue { get; private set; }
 
         public bool Selected { get; set; }
 
