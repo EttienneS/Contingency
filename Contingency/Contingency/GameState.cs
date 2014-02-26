@@ -10,14 +10,8 @@ namespace Contingency
     {
         public static List<Block> Blocks;
         public static List<Explosion> Explosions;
-        public static List<Unit> Units;
         public static List<Projectile> Projectiles;
-
-        //    public static GameState Current
-        //    {
-        //        return
-        //    private new GameState(Blocks , Explosions , Units , Projectiles );
-        //}
+        public static List<Unit> Units;
 
         public GameState(List<Block> blocks, List<Explosion> explosions, List<Unit> units, List<Projectile> projectiles)
         {
@@ -35,14 +29,6 @@ namespace Contingency
             Projectiles = new List<Projectile>();
         }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Blocks", Blocks);
-            info.AddValue("Explosions", Explosions);
-            info.AddValue("Units", Units);
-            info.AddValue("Projectiles", Projectiles);
-        }
-
         protected GameState(SerializationInfo information, StreamingContext context)
         {
             Blocks = (List<Block>)information.GetValue("Blocks", typeof(List<Block>));
@@ -51,5 +37,12 @@ namespace Contingency
             Projectiles = (List<Projectile>)information.GetValue("Projectiles", typeof(List<Projectile>));
         }
 
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Blocks", Blocks);
+            info.AddValue("Explosions", Explosions);
+            info.AddValue("Units", Units);
+            info.AddValue("Projectiles", Projectiles);
+        }
     }
 }

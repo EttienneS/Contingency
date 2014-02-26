@@ -22,7 +22,7 @@ namespace Contingency.Units
 
             OrderQueue = new List<Order>();
             ShotCount = 0;
-            ShootRate = 100;
+            ShootRate = 200;
             CanShoot = true;
         }
 
@@ -78,6 +78,8 @@ namespace Contingency.Units
 
         private float ShootRate { get; set; }
 
+        public Special Special { get; set; }
+
         private float ShootTimer { get; set; }
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -123,7 +125,7 @@ namespace Contingency.Units
 
         internal void Hit(Projectile p)
         {
-            if (Team == p.Owner.Team)
+            if (p.Owner != null && Team == p.Owner.Team)
                 p.Damage = 0;
 
             CurrentHP -= p.Damage;
@@ -161,5 +163,7 @@ namespace Contingency.Units
                 ShotCount++;
             }
         }
+
+       
     }
 }

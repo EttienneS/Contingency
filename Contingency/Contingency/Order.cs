@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Contingency.Units;
 using Microsoft.Xna.Framework;
 
 namespace Contingency
@@ -32,6 +33,9 @@ namespace Contingency
 
     public enum OrderType
     {
-        None, Move, Attack
+        None, 
+        Move,
+        Attack,
+        Special
     }
 }

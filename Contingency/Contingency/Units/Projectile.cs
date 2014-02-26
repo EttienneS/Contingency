@@ -8,6 +8,11 @@ namespace Contingency.Units
     [Serializable]
     public class Projectile : Sprite, ISerializable
     {
+        public Projectile(int damage)
+        {
+            Damage = damage;
+        }
+
         public Projectile()
         {
             Damage = 3;

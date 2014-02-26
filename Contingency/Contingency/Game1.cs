@@ -18,11 +18,9 @@ namespace Contingency
         private Texture2D _lineTexture;
         private readonly Menu _menu = new Menu();
         private MouseState _mouseStateCurrent, _mouseStatePrevious;
-        private bool _paused = true;
+        private bool _inPlanningMode = true;
         private SpriteBatch _spriteBatch;
-        private const int TotalPlanningTime = 15000;
         private const int TotalPlayTime = 5000;
-        private int _remainingPlanningTime = TotalPlanningTime;
         private int _remainingPlayTime = TotalPlayTime;
         private bool _menuMode = true;
         private const string CurrentTeam = "red";
@@ -67,6 +65,11 @@ namespace Contingency
                 GameState.Units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 15, 50 + i * 40, 50, "blue"));
             }
 
+            foreach (Unit u in GameState.Units)
+            {
+                u.Special = new Special("blink", 1000, 200);
+            }
+
             while (GameState.Blocks.Count < 400)
             {
                 int x = Helper.Rand.Next(0, GraphicsDevice.Viewport.Width);
@@ -108,7 +111,16 @@ namespace Contingency
             Thread listener = new Thread(SocketManager.StartListening);
             listener.Start();
             SocketManager.DataRecieved += SocketManager_DataRecieved;
+
+            Buttons.Add(new Button("EndTurn", 90, 25, "End Turn", new Vector2(0, 0), Color.LimeGreen, Color.Black, GraphicsDevice));
+            Buttons["EndTurn"].Visible = false;
+            Buttons["EndTurn"].ButtonClicked += EndTurnClicked;
+
+            Buttons.Add(new Button("Menu", 200, 100, "Start", new Vector2(100, 100), Color.LimeGreen, Color.Black, GraphicsDevice));
+            Buttons["Menu"].ButtonClicked += (sender, args) => ToggleMenuMode(false);
         }
+
+        public ButtonList Buttons = new ButtonList();
 
         protected override void UnloadContent()
         {
@@ -149,6 +161,8 @@ namespace Contingency
 
             _spriteBatch.Begin();
 
+            DrawButtons();
+
             if (!_menuMode)
             {
                 DrawBlocks();
@@ -163,14 +177,16 @@ namespace Contingency
 
                 DrawMenu();
             }
-            else
-            {
-                _spriteBatch.Draw(SpriteList.ContentSprites["start"], new Vector2(100, 100), Color.White);
-                _spriteBatch.Draw(SpriteList.ContentSprites["join"], new Vector2(100, 200), Color.White);
-            }
 
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        private void ToggleMenuMode(bool enabled)
+        {
+            Buttons["EndTurn"].Visible = !enabled;
+            Buttons["Menu"].Visible = enabled;
+            _menuMode = enabled;
         }
 
         private void DrawBlocks()
@@ -225,13 +241,27 @@ namespace Contingency
 
         private void DrawText()
         {
-            if (_paused)
+            if (_inPlanningMode)
             {
-                _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlanningTime).ToString(), new Vector2(300, 0), Color.LimeGreen);
+                //_spriteBatch.DrawString(SpriteList.Font, "END TURN", new Vector2(300, 0), Color.LimeGreen);
+                //   _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlanningTime).ToString(), new Vector2(300, 0), Color.LimeGreen);
             }
             else
             {
-                _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlayTime).ToString(), new Vector2(300, 0), Color.Red);
+                _spriteBatch.DrawString(SpriteList.Font, "TURN RUNNING: " + TimeSpan.FromMilliseconds(_remainingPlayTime).ToString(), new Vector2(300, 0), Color.Red);
+                //   _spriteBatch.DrawString(SpriteList.Font, TimeSpan.FromMilliseconds(_remainingPlayTime).ToString(), new Vector2(300, 0), Color.Red);
+            }
+        }
+
+        private void DrawButtons()
+        {
+            foreach (Button button in Buttons)
+            {
+                if (button.Visible)
+                {
+                    DrawSprite(button.Sprite, button.Location, 1.0f);
+                    _spriteBatch.DrawString(SpriteList.Font, button.Text, button.Location + new Vector2(10, 3), button.TextColor);
+                }
             }
         }
 
@@ -243,13 +273,21 @@ namespace Contingency
                 {
                     _spriteBatch.Draw(u.GetSprite(), u.Location, null, Color.White, u.CurrentAngle, new Vector2(u.Width / 2, u.Height / 2), 1.0f, SpriteEffects.None, 0f);
 
-                    Vector2 startPoint = new Vector2(u.Location.X - u.Width / 2, u.Location.Y - 15);
-                    Vector2 endPoint = new Vector2(startPoint.X + u.Width, u.Location.Y - 15);
-                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width * (u.CurrentHP / (float)u.MaxHP)),
-                        u.Location.Y - 15);
+                    float hpLoc = u.Location.Y - 15;
+                    Vector2 startPoint = new Vector2(u.Location.X - u.Width / 2, hpLoc);
+                    Vector2 endPoint = new Vector2(startPoint.X + u.Width, hpLoc);
+                    Vector2 endPointHp = new Vector2(startPoint.X + (u.Width * (u.CurrentHP / (float)u.MaxHP)), hpLoc);
 
                     DrawLine(_spriteBatch, startPoint, endPoint, Color.DarkRed, 3);
                     DrawLine(_spriteBatch, startPoint, endPointHp, Color.LimeGreen, 3);
+
+                    float spesLoc = u.Location.Y + u.Height - 9;
+                    Vector2 startPointSpes = new Vector2(u.Location.X - u.Width / 2, spesLoc);
+                    Vector2 endPointSpes = new Vector2(startPoint.X + u.Width, spesLoc);
+                    Vector2 endPointSpeTot = new Vector2(startPoint.X + (u.Width * (u.Special.Elapsed / u.Special.CoolDown)), spesLoc);
+
+                    DrawLine(_spriteBatch, startPointSpes, endPointSpes, Color.DarkBlue, 3);
+                    DrawLine(_spriteBatch, startPointSpes, endPointSpeTot, Color.Cyan, 3);
                 }
             }
 
@@ -257,6 +295,23 @@ namespace Contingency
             {
                 for (int i = 0; i < u.OrderQueue.Count; i++)
                 {
+                    Vector2 source = u.Location;
+
+                    if (i > 0)
+                    {
+                        // if this is not the first move in the sequence set the origin point to the last one in the sequence
+                        Vector2 lastMoveLocation = u.Location;
+                        for (int l = 0; l < i; l++)
+                        {
+                            if (u.OrderQueue[l].Type == OrderType.Move || (u.OrderQueue[l].Type == OrderType.Special && u.Special.Type.Equals("blink")))
+                            {
+                                lastMoveLocation = u.OrderQueue[l].Target;
+                            }
+                        }
+                        source = lastMoveLocation;
+                        source += new Vector2(5f);
+                    }
+
                     Order o = u.OrderQueue[i];
                     Texture2D sprite = SpriteList.ContentSprites["targetAttack"];
                     Color color = Color.Red;
@@ -267,20 +322,28 @@ namespace Contingency
                         color = Color.LimeGreen;
                     }
 
-                    Vector2 source = u.Location;
-
-                    if (i > 0)
+                    if (o.Type == OrderType.Special)
                     {
-                        Vector2 lastMoveLocation = u.Location;
-                        for (int l = 0; l < i; l++)
+                        sprite = SpriteList.ContentSprites["targetMove"];
+                        color = Color.Aquamarine;
+
+                        switch (u.Special.Type.ToLower())
                         {
-                            if (u.OrderQueue[l].Type == OrderType.Move)
-                            {
-                                lastMoveLocation = u.OrderQueue[l].Target;
-                            }
+                            case "blink":
+                                color = Color.Purple;
+                                float angle = (float)Math.Atan2(source.Y - o.Target.Y, source.X - o.Target.X);
+
+                                float distance = Vector2.Distance(source, o.Target);
+                                if (distance > u.Special.Power)
+                                {
+                                    o.Target = new Vector2((float)Math.Cos(angle) * -u.Special.Power, (float)Math.Sin(angle) * -u.Special.Power) + source;
+                                }
+
+                                DrawSprite(sprite, o.Target, 1.0f);
+                                DrawLine(_spriteBatch, source, o.Target + new Vector2(5), color, 2);
+
+                                continue;
                         }
-                        source = lastMoveLocation;
-                        source += new Vector2(5f);
                     }
 
                     _spriteBatch.Draw(sprite, o.Target, null, Color.White, 0f, new Vector2(0, 0), 1.0f, SpriteEffects.None, 0f);
@@ -289,9 +352,14 @@ namespace Contingency
             }
         }
 
+        private void DrawSprite(Texture2D sprite, Vector2 location, float rotation)
+        {
+            _spriteBatch.Draw(sprite, location, null, Color.White, 0f, new Vector2(0, 0), rotation, SpriteEffects.None, 0f);
+        }
+
         #endregion Drawing
 
-        #region Porcess Input
+        #region Process Input
 
         private void CatchInputs()
         {
@@ -315,37 +383,32 @@ namespace Contingency
 
             _mouseStateCurrent = Mouse.GetState();
 
-            if (!_menuMode)
+            if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
             {
-                if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
-                {
-                    MouseClickedGame();
-                }
-                else if (_mouseStateCurrent.RightButton == ButtonState.Pressed && _mouseStatePrevious.RightButton == ButtonState.Released)
-                {
-                    Unit selected = GetSelctedUnit();
-
-                    if (selected != null)
-                    {
-                        selected.Selected = false;
-                        _menu.Visible = false;
-                    }
-                }
+                MouseClickedGame();
             }
-            else
+            else if (_mouseStateCurrent.RightButton == ButtonState.Pressed && _mouseStatePrevious.RightButton == ButtonState.Released)
             {
-                if (_mouseStateCurrent.LeftButton == ButtonState.Pressed && _mouseStatePrevious.LeftButton == ButtonState.Released)
+                Unit selected = GetSelctedUnit();
+
+                if (selected != null)
                 {
-                    MouseClickedMenu();
+                    selected.Selected = false;
+                    _menu.Visible = false;
                 }
             }
 
             _mouseStatePrevious = _mouseStateCurrent;
         }
 
-        private void MouseClickedMenu()
+
+        private void EndTurnClicked(object sender, EventArgs e)
         {
-            _menuMode = false;
+            if (_inPlanningMode)
+            {
+                _inPlanningMode = false;
+                _remainingPlayTime = TotalPlayTime;
+            }
         }
 
         private void MouseClickedGame()
@@ -354,13 +417,20 @@ namespace Contingency
 
             if (selectedUnit == null)
             {
+                Vector2 clickLocation = new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y);
                 foreach (Unit u in GameState.Units)
                 {
-                    if (u.Touches(new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y), 2.0) && u.Team == CurrentTeam)
+                    if (u.Touches(clickLocation, 2.0) && u.Team == CurrentTeam)
                     {
                         u.Selected = !u.Selected;
                         break;
                     }
+                }
+
+                foreach (Button b in Buttons)
+                {
+                    if (b.Visible)
+                        b.CheckClicked(clickLocation);
                 }
             }
             else
@@ -386,7 +456,7 @@ namespace Contingency
                                 break;
 
                             case "Special":
-                                selectedUnit.OrderQueue.Clear();
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Special, mouseVector));
                                 break;
 
                             case "Stop":
@@ -404,7 +474,7 @@ namespace Contingency
             }
         }
 
-        #endregion Porcess Input
+        #endregion Process Input
 
         #region State Updates
 
@@ -412,27 +482,14 @@ namespace Contingency
         {
             base.Update(gameTime);
 
-            if (_paused)
-            {
-                CatchInputs();
-                if (_remainingPlanningTime <= 0)
-                {
-                    _paused = false;
-                    _remainingPlanningTime = 0;
-                    _remainingPlayTime = TotalPlayTime;
-                }
-                else
-                {
-                    _remainingPlanningTime -= gameTime.ElapsedGameTime.Milliseconds;
-                }
-            }
-            else
+            CatchInputs();
+
+            if (!_inPlanningMode)
             {
                 if (_remainingPlayTime <= 0)
                 {
-                    _paused = true;
+                    _inPlanningMode = true;
                     _remainingPlayTime = 0;
-                    _remainingPlanningTime = TotalPlanningTime;
                 }
                 else
                 {
@@ -442,7 +499,7 @@ namespace Contingency
 
             if (!_menuMode)
             {
-                if (_paused)
+                if (_inPlanningMode)
                     return;
 
                 UpdateExplosions(gameTime);
@@ -541,12 +598,27 @@ namespace Contingency
         private void UpdateUnits(GameTime gameTime)
         {
             float elapsed = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            foreach (Unit u in GameState.Units)
+            for (int i = 0; i < GameState.Units.Count; i++)
             {
+                Unit u = GameState.Units[i];
                 u.ReloadGun(elapsed);
 
                 switch (u.CurrentOrder.Type)
                 {
+                    case OrderType.Special:
+
+                        if (u.Special.Complete)
+                        {
+                            u.OrderComplete();
+                            u.Special.Complete = false;
+                            u.Special.Elapsed = 0f;
+                        }
+                        else
+                        {
+                            u.Special.Execute(elapsed, ref u);
+                        }
+                        break;
+
                     case OrderType.None:
                         u.OrderComplete();
                         break;

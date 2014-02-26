@@ -57,7 +57,7 @@ namespace Contingency.Units
 
         internal void Hit(Projectile p)
         {
-            if (Team == p.Owner.Team)
+            if (Team != null && Team == p.Owner.Team)
                 p.Damage = 0;
 
             CurrentHP -= p.Damage;
