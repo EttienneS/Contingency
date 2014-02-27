@@ -6,7 +6,7 @@ namespace Contingency
 {
     public static class SpriteList
     {
-        public static Dictionary<string, Texture2D> ContentSprites = new Dictionary<string, Texture2D>();
+        public static readonly Dictionary<string, Texture2D> ContentSprites = new Dictionary<string, Texture2D>();
 
         public static SpriteFont Font { get; set; }
 
@@ -25,6 +25,7 @@ namespace Contingency
             ContentSprites.Add("menu", content.Load<Texture2D>("menu"));
             ContentSprites.Add("start", content.Load<Texture2D>("start"));
             ContentSprites.Add("join", content.Load<Texture2D>("join"));
+            ContentSprites.Add("background", content.Load<Texture2D>("background"));
 
             Font = content.Load<SpriteFont>("Font");
         }

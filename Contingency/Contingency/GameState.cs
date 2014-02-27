@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Contingency.Units;
@@ -8,10 +9,10 @@ namespace Contingency
     [Serializable]
     public class GameState : ISerializable
     {
-        public static List<Block> Blocks;
-        public static List<Explosion> Explosions;
-        public static List<Projectile> Projectiles;
-        public static List<Unit> Units;
+        public List<Block> Blocks;
+        public List<Explosion> Explosions;
+        public List<Projectile> Projectiles;
+        public List<Unit> Units;
 
         public GameState(List<Block> blocks, List<Explosion> explosions, List<Unit> units, List<Projectile> projectiles)
         {
@@ -43,6 +44,28 @@ namespace Contingency
             info.AddValue("Explosions", Explosions);
             info.AddValue("Units", Units);
             info.AddValue("Projectiles", Projectiles);
+        }
+
+        public static GameState ConsolidateGamesState(GameState state1, GameState state2, string fromTeam)
+        {
+            for (int i = 0; i < state1.Units.Count; i++)
+            {
+                if (state1.Units[i].Team != fromTeam)
+                {
+                    state1.Units.RemoveAt(i);
+                }
+            }
+
+            for (int i = 0; i < state2.Units.Count; i++)
+            {
+                if (state2.Units[i].Team != fromTeam)
+                {
+                    state1.Units.Add(state2.Units[i]);
+                }
+            }
+
+
+            return state1;
         }
     }
 }

@@ -9,18 +9,23 @@ namespace Contingency
 {
     public class GameStateDataEventArgs : EventArgs
     {
+        public string Message { get; set; }
+        
         public byte[] Data { get; set; }
 
         public GameStateDataEventArgs(byte[] data)
         {
             Data = data;
         }
+
+        public GameStateDataEventArgs(string message)
+        {
+            Message = message;
+        }
     }
 
     public static class SocketManager
     {
-        private const int Port = 11000;
-
         private static readonly ManualResetEvent AllDone = new ManualResetEvent(false);
         private static readonly ManualResetEvent ConnectDone = new ManualResetEvent(false);
         private static readonly ManualResetEvent ReceiveDone = new ManualResetEvent(false);
@@ -63,7 +68,15 @@ namespace Contingency
                 String content = state.Builder.ToString();
                 if (content.IndexOf("<EOF>") > -1)
                 {
-                    OnDatarecieved(new GameStateDataEventArgs(Convert.FromBase64String(content.Replace("<EOF>", string.Empty))));
+                    try
+                    {
+                        OnDatarecieved(new GameStateDataEventArgs(Convert.FromBase64String(content.Replace("<EOF>", string.Empty))));
+                    }
+                    catch (Exception)
+                    {
+                        OnDatarecieved(new GameStateDataEventArgs(content.Replace("<EOF>", string.Empty)));
+                    }
+                    
                     SendServer(handler, content);
                 }
                 else
@@ -73,13 +86,11 @@ namespace Contingency
             }
         }
 
-
-
-        public static void StartListening()
+        public static void StartListening(int port)
         {
             IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -157,7 +168,7 @@ namespace Contingency
             }
         }
 
-        private static void Send(Socket client, string data)
+        public static void Send(Socket client, string data)
         {
             byte[] byteData = Encoding.ASCII.GetBytes(data);
             client.BeginSend(byteData, 0, byteData.Length, 0, SendCallback, client);
@@ -195,34 +206,45 @@ namespace Contingency
             handler.BeginSend(byteData, 0, byteData.Length, 0, SendCallbackServer, handler);
         }
 
-        public static void StartClient()
+        //public static void StartClient()
+        //{
+        //    try
+        //    {
+        //        byte[] bytes = File.ReadAllBytes("c:\\file.bin");
+        //        string x = Convert.ToBase64String(bytes);
+
+        //        IPHostEntry ipHostInfo = Dns.Resolve(Environment.MachineName);
+        //        IPAddress ipAddress = ipHostInfo.AddressList[0];
+        //        IPEndPoint remoteEP = new IPEndPoint(ipAddress, Port);
+
+        //        Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        //        client.BeginConnect(remoteEP, ConnectCallback, client);
+        //        ConnectDone.WaitOne();
+
+        //        Send(client, x + "<EOF>");
+        //        SendDone.WaitOne();
+
+        //        Receive(client);
+        //        ReceiveDone.WaitOne();
+
+        //        client.Shutdown(SocketShutdown.Both);
+        //        client.Close();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        public static Socket GetClient(string ip, int port)
         {
-            try
-            {
-                byte[] bytes = File.ReadAllBytes("c:\\file.bin");
-                string x = Convert.ToBase64String(bytes);
+            IPEndPoint remoteEP = new IPEndPoint(IPAddress.Parse(ip), port);
 
-                IPHostEntry ipHostInfo = Dns.Resolve(Environment.MachineName);
-                IPAddress ipAddress = ipHostInfo.AddressList[0];
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, Port);
+            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            client.BeginConnect(remoteEP, ConnectCallback, client);
+            ConnectDone.WaitOne();
 
-                Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                client.BeginConnect(remoteEP, ConnectCallback, client);
-                ConnectDone.WaitOne();
-
-                Send(client, x + "<EOF>");
-                SendDone.WaitOne();
-
-                Receive(client);
-                ReceiveDone.WaitOne();
-
-                client.Shutdown(SocketShutdown.Both);
-                client.Close();
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            return client;
         }
     }
 

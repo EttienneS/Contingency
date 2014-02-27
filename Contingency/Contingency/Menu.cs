@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,8 +7,6 @@ namespace Contingency
 {
     public class Menu : Sprite
     {
-        public bool Visible { get; set; }
-
         public Menu()
         {
             Width = 60;
@@ -20,12 +15,9 @@ namespace Contingency
             Visible = false;
         }
 
-        public override Texture2D GetSprite()
-        {
-            return SpriteList.ContentSprites["menu"];
-        }
+        public bool Visible { get; set; }
 
-        public Dictionary<string, Rectangle> Quads
+        private Dictionary<string, Rectangle> Quads
         {
             get
             {
@@ -57,6 +49,11 @@ namespace Contingency
             }
 
             return string.Empty;
+        }
+
+        public override Texture2D GetSprite()
+        {
+            return SpriteList.ContentSprites["menu"];
         }
     }
 }

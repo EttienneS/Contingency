@@ -1,22 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using Microsoft.Xna.Framework;
 
 namespace Contingency.Units
 {
     [Serializable]
     public class Special : ISerializable
     {
-        public string Type { get; set; }
+        protected Special(SerializationInfo information, StreamingContext context)
+        {
+            Type = (string)information.GetValue("Type", typeof(string));
+            CoolDown = (float)information.GetValue("CoolDown", typeof(float));
+            Elapsed = (float)information.GetValue("Elapsed", typeof(float));
+            Power = (float)information.GetValue("Power", typeof(float));
+        }
 
-        public float CoolDown { get; set; }
-
-        public float Elapsed { get; set; }
-
-        public float Power { get; set; }
+        public Special(string type, float coolDown, float power)
+        {
+            Type = type;
+            CoolDown = coolDown;
+            Power = power;
+        }
 
         public bool Complete
         {
@@ -24,7 +27,23 @@ namespace Contingency.Units
             set;
         }
 
-        internal void Execute(float elapsed, ref Unit owner)
+        public float CoolDown { get; set; }
+
+        public float Elapsed { get; set; }
+
+        public float Power { get; set; }
+
+        public string Type { get; set; }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Type", Type);
+            info.AddValue("CoolDown", CoolDown);
+            info.AddValue("Elapsed", Elapsed);
+            info.AddValue("Power", Power);
+        }
+
+        internal void Execute(float elapsed, ref Unit owner, ref GameState gameState)
         {
             Elapsed += elapsed;
             switch (Type.ToLower())
@@ -40,7 +59,7 @@ namespace Contingency.Units
                         owner.Hit(new Projectile(5));
 
                         bool landedInSomething = false;
-                        foreach (Block b in GameState.Blocks)
+                        foreach (Block b in gameState.Blocks)
                         {
                             if (owner.Touches(b))
                             {
@@ -56,23 +75,6 @@ namespace Contingency.Units
                     }
                     break;
             }
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Type", Type);
-        }
-
-        public Special(SerializationInfo information, StreamingContext context)
-        {
-            Type = (string)information.GetValue("Type", typeof(string));
-        }
-
-        public Special(string type, float coolDown, float power)
-        {
-            Type = type;
-            CoolDown = coolDown;
-            Power = power;
         }
     }
 }

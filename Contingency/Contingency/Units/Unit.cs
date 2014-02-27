@@ -44,6 +44,7 @@ namespace Contingency.Units
             CanShoot = (bool)information.GetValue("CanShoot", typeof(bool));
             ShootRate = (float)information.GetValue("ShootRate", typeof(float));
             ShotCount = (int)information.GetValue("ShotCount", typeof(int));
+            Special = (Special)information.GetValue("Special", typeof(Special));
         }
 
         public Texture2D BulletSprite
@@ -74,11 +75,11 @@ namespace Contingency.Units
 
         public int ShotCount { get; set; }
 
+        public Special Special { get; set; }
+
         private bool CanShoot { get; set; }
 
         private float ShootRate { get; set; }
-
-        public Special Special { get; set; }
 
         private float ShootTimer { get; set; }
 
@@ -98,6 +99,7 @@ namespace Contingency.Units
             info.AddValue("CanShoot", CanShoot);
             info.AddValue("ShootRate", ShootRate);
             info.AddValue("ShotCount", ShotCount);
+            info.AddValue("Special", Special);
         }
 
         public override Texture2D GetSprite()
@@ -149,8 +151,8 @@ namespace Contingency.Units
             {
                 Projectile p = new Projectile
                 {
-                    TargetAngle = TargetAngle + (float)Helper.Rand.Next(-3, 3) / 100
-                };  // add randomness to angle for long distance targeting
+                    TargetAngle = TargetAngle
+                };  
 
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -5, (float)Math.Sin(p.TargetAngle) * -5);
 
@@ -163,7 +165,5 @@ namespace Contingency.Units
                 ShotCount++;
             }
         }
-
-       
     }
 }

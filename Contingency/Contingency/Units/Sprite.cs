@@ -7,17 +7,27 @@ namespace Contingency.Units
     [Serializable]
     public abstract class Sprite
     {
-        private const float TurnSpeed = 0.05f;
-
         public Vector2 Momentum = new Vector2(0f);
 
         public float TargetAngle;
 
+        private const float TurnSpeed = 0.05f;
+
         private double _collisionRadius;
 
-        protected Sprite()
-        {
-        }
+        public float CurrentAngle { get; set; }
+
+        public int CurrentHP { get; set; }
+
+        public int Height { get; set; }
+
+        public Vector2 Location { get; set; }
+
+        public int MaxHP { get; set; }
+
+        public string Team { get; set; }
+
+        public int Width { get; set; }
 
         protected double CollisionRadius
         {
@@ -34,20 +44,6 @@ namespace Contingency.Units
                 _collisionRadius = value;
             }
         }
-
-        public float CurrentAngle { get; set; }
-
-        public int CurrentHP { get; set; }
-
-        public int Height { get; set; }
-
-        public Vector2 Location { get; set; }
-
-        public int MaxHP { get; set; }
-
-        public string Team { get; set; }
-
-        public int Width { get; set; }
 
         public static bool AlmostEquals(float f1, float f2, double precision)
         {
