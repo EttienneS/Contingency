@@ -100,7 +100,7 @@ namespace Contingency
 
             foreach (Projectile p in _gameState.Projectiles)
             {
-                if (p.Location.X < 0 || p.Location.X > GraphicsDevice.Viewport.Width || p.Location.Y > GraphicsDevice.Viewport.Height || p.Location.Y < 0 || (p.Momentum.X == 0 && p.Momentum.Y == 0))
+                if (p.Location.X < 0 || p.Location.X > _map.Width || p.Location.Y > _map.Height || p.Location.Y < 0 || (p.Momentum.X == 0 && p.Momentum.Y == 0))
                 {
                     killSprites.Add(p);
                     break;

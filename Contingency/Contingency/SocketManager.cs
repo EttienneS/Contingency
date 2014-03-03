@@ -10,7 +10,7 @@ namespace Contingency
     public class GameStateDataEventArgs : EventArgs
     {
         public string Message { get; set; }
-        
+
         public byte[] Data { get; set; }
 
         public GameStateDataEventArgs(byte[] data)
@@ -30,6 +30,8 @@ namespace Contingency
         private static readonly ManualResetEvent ConnectDone = new ManualResetEvent(false);
         private static readonly ManualResetEvent ReceiveDone = new ManualResetEvent(false);
         private static readonly ManualResetEvent SendDone = new ManualResetEvent(false);
+
+        public static bool Stop = false;
 
         public static event EventHandler DataRecieved;
 
@@ -76,7 +78,7 @@ namespace Contingency
                     {
                         OnDatarecieved(new GameStateDataEventArgs(content.Replace("<EOF>", string.Empty)));
                     }
-                    
+
                     SendServer(handler, content);
                 }
                 else
@@ -86,11 +88,9 @@ namespace Contingency
             }
         }
 
-        public static void StartListening(int port)
+        public static void StartListening(string ip, int port)
         {
-            IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
 
             Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -99,7 +99,7 @@ namespace Contingency
                 listener.Bind(localEndPoint);
                 listener.Listen(100);
 
-                while (true)
+                while (!Stop)
                 {
                     AllDone.Reset();
                     listener.BeginAccept(AcceptCallback, listener);
@@ -155,10 +155,6 @@ namespace Contingency
                 }
                 else
                 {
-                    //if (state.Builder.Length > 1)
-                    //{
-                    //    response = state.Builder.ToString();
-                    //}
                     ReceiveDone.Set();
                 }
             }
@@ -205,36 +201,6 @@ namespace Contingency
             byte[] byteData = Encoding.Unicode.GetBytes(data);
             handler.BeginSend(byteData, 0, byteData.Length, 0, SendCallbackServer, handler);
         }
-
-        //public static void StartClient()
-        //{
-        //    try
-        //    {
-        //        byte[] bytes = File.ReadAllBytes("c:\\file.bin");
-        //        string x = Convert.ToBase64String(bytes);
-
-        //        IPHostEntry ipHostInfo = Dns.Resolve(Environment.MachineName);
-        //        IPAddress ipAddress = ipHostInfo.AddressList[0];
-        //        IPEndPoint remoteEP = new IPEndPoint(ipAddress, Port);
-
-        //        Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        //        client.BeginConnect(remoteEP, ConnectCallback, client);
-        //        ConnectDone.WaitOne();
-
-        //        Send(client, x + "<EOF>");
-        //        SendDone.WaitOne();
-
-        //        Receive(client);
-        //        ReceiveDone.WaitOne();
-
-        //        client.Shutdown(SocketShutdown.Both);
-        //        client.Close();
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw;
-        //    }
-        //}
 
         public static Socket GetClient(string ip, int port)
         {

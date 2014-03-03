@@ -12,10 +12,16 @@ namespace Contingency
 
         public static void LoadSprites(ContentManager content)
         {
-            ContentSprites.Add("unitRed", content.Load<Texture2D>("unitRed"));
-            ContentSprites.Add("unitBlue", content.Load<Texture2D>("unitBlue"));
-            ContentSprites.Add("unitRedSelected", content.Load<Texture2D>("unitRedSelected"));
-            ContentSprites.Add("unitBlueSelected", content.Load<Texture2D>("unitBlueSelected"));
+            ContentSprites.Add("blinkerRed", content.Load<Texture2D>("blinkerRed"));
+            ContentSprites.Add("blinkerBlue", content.Load<Texture2D>("blinkerBlue"));
+            ContentSprites.Add("blinkerRedSelected", content.Load<Texture2D>("blinkerRedSelected"));
+            ContentSprites.Add("blinkerBlueSelected", content.Load<Texture2D>("blinkerBlueSelected"));
+
+            ContentSprites.Add("builderRed", content.Load<Texture2D>("builderRed"));
+            ContentSprites.Add("builderBlue", content.Load<Texture2D>("builderBlue"));
+            ContentSprites.Add("builderRedSelected", content.Load<Texture2D>("builderRedSelected"));
+            ContentSprites.Add("builderBlueSelected", content.Load<Texture2D>("builderBlueSelected"));
+
             ContentSprites.Add("projectileRed", content.Load<Texture2D>("projectileRed"));
             ContentSprites.Add("projectileBlue", content.Load<Texture2D>("projectileBlue"));
             ContentSprites.Add("explosion", content.Load<Texture2D>("explosion"));

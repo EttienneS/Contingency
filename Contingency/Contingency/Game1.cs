@@ -10,6 +10,9 @@ namespace Contingency
 {
     public partial class Game1
     {
+        public const string ClientIp = "192.168.137.1";
+        public const string ServerIp = "192.168.137.1";
+
         public bool Server;
         private const int TotalPlayTime = 5000;
         private readonly ButtonList _buttons = new ButtonList();
@@ -25,6 +28,18 @@ namespace Contingency
         private Thread _waitJoin;
         private string CurrentTeam = "red";
 
+        private Rectangle _view;
+
+        private Vector2 ViewOffset
+        {
+            get
+            {
+                return new Vector2(_view.X, _view.Y);
+            }
+        }
+
+        private Rectangle _map;
+
         public Game1()
         {
             GraphicsDeviceManager graphics = new GraphicsDeviceManager(this)
@@ -34,6 +49,9 @@ namespace Contingency
                 PreferredBackBufferHeight = 600
             };
             graphics.ApplyChanges();
+
+            _view = new Rectangle(0, 0, 800, 600);
+            _map = new Rectangle(0, 0, 1920, 1080);
 
             Content.RootDirectory = "Content";
         }
@@ -58,7 +76,7 @@ namespace Contingency
             _lineTexture.GetData(data);
             data[0] = Color.White;
             _lineTexture.SetData(data);
-            
+
             _buttons.Add(new Button("EndTurn", 90, 25, "End Turn", new Vector2(0, 0), Color.LimeGreen, Color.Black, GraphicsDevice));
             _buttons["EndTurn"].Visible = false;
             _buttons["EndTurn"].ButtonClicked += EndTurnClicked;
@@ -80,21 +98,22 @@ namespace Contingency
                 red.TargetAngle = red.CurrentAngle;
 
                 _gameState.Units.Add(red);
-                _gameState.Units.Add(new Unit(20, 20, GraphicsDevice.Viewport.Width - 15, 50 + i * 55, 50, "blue"));
+                _gameState.Units.Add(new Unit(20, 20, _map.Width - 15, 50 + i * 55, 50, "blue"));
+
+                Special special = new Special(i%2 == 0 ? "build" : "blink", 1000, 200);
+
+                _gameState.Units[_gameState.Units.Count - 2].Special = special;
+                _gameState.Units[_gameState.Units.Count - 1].Special = special;
             }
 
-            foreach (Unit u in _gameState.Units)
-            {
-                u.Special = new Special("blink", 1000, 200);
-            }
-
-            GenerateStage(200, 5, 7, 10, 10); // big blocks
-            GenerateStage(200, 3, 4, 6, 6); // medium blocks
-            GenerateStage(200, 0, 0, 3, 3); // small blocks
+            GenerateStage(800, 5, 7, 10, 10); // big blocks
+            GenerateStage(800, 3, 4, 6, 6); // medium blocks
+            GenerateStage(800, 0, 0, 3, 3); // small blocks
         }
 
         protected override void UnloadContent()
         {
+            SocketManager.Stop = true;
         }
 
         private void GenerateStage(int maxBlocks, int minWidth, int minHeight, int maxWidth, int maxHeight)
@@ -102,8 +121,8 @@ namespace Contingency
             int currentBlockCounter = 0;
             while (currentBlockCounter < maxBlocks)
             {
-                int x = Helper.Rand.Next(0, GraphicsDevice.Viewport.Width);
-                int y = Helper.Rand.Next(0, GraphicsDevice.Viewport.Height);
+                int x = Helper.Rand.Next(0, _map.Width);
+                int y = Helper.Rand.Next(0, _map.Height);
 
                 Vector2 v = new Vector2(x, y);
                 int w = Helper.Rand.Next(minWidth, maxWidth);
@@ -146,7 +165,7 @@ namespace Contingency
                 }
             }
         }
-         
+
         private void JoinGame()
         {
             Server = false;
@@ -154,9 +173,11 @@ namespace Contingency
 
             StartListener(12000);
 
-            _messages.Add("Joining server: 10.1.1.102:11000", new Vector2(100, 100));
+            _messages.Add("Joining server: 11000", new Vector2(100, 100));
 
-            _waitJoin = new Thread(() => JoinServer("10.1.1.102"));
+            
+            _view = new Rectangle((_map.Width - _view.Width) * -1, 0, _view.Width,_view.Height);
+            _waitJoin = new Thread(() => JoinServer(ServerIp));
             _waitJoin.Start();
 
             ToggleMenuMode(false);
@@ -170,7 +191,7 @@ namespace Contingency
 
             StartListener(11000);
 
-            _messages.Add("Waiting for clients on: 10.1.1.102:11000", new Vector2(100, 100));
+            _messages.Add("Waiting for clients on: 11000", new Vector2(100, 100));
 
             _waitJoin = new Thread(WaitForOpponentToJoin);
             _waitJoin.Start();
@@ -180,7 +201,7 @@ namespace Contingency
 
         private void StartListener(int port)
         {
-            Thread listener = new Thread(() => SocketManager.StartListening(port));
+            Thread listener = new Thread(() => SocketManager.StartListening(ClientIp, port));
             listener.Start();
             SocketManager.DataRecieved += SocketManager_DataRecieved;
         }

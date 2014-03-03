@@ -18,6 +18,8 @@ namespace Contingency
                 Exit();
             }
 
+            CatchViewMove();
+
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
             {
                 _waitJoin.Abort();
@@ -91,13 +93,38 @@ namespace Contingency
             _mouseStatePrevious = _mouseStateCurrent;
         }
 
+        private void CatchViewMove()
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                if (_view.Y < 0)
+                    _view.Y += 10;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                if (Math.Abs(_view.Y) + _view.Height < _map.Height)
+                    _view.Y -= 10;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Left))
+            {
+                if (_view.X < 0)
+                    _view.X += 10;
+            }
+            if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            {
+                if (Math.Abs(_view.X) + _view.Width < _map.Width)
+                    _view.X -= 10;
+            }
+        }
+
         private void EndTurnClicked(object sender, EventArgs e)
         {
             _messages.Add("Waiting for opponent", new Vector2(100, 100));
 
             if (Server)
             {
-                GameState state  = ConsolidateOponentData();
+                GameState state = ConsolidateOponentData();
                 _gameState = state;
             }
             else
@@ -120,9 +147,11 @@ namespace Contingency
         {
             Unit selectedUnit = GetSelctedUnit();
 
+            Vector2 clickLocation = new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y) - ViewOffset;
+
             if (selectedUnit == null)
             {
-                Vector2 clickLocation = new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y);
+
                 foreach (Unit u in _gameState.Units)
                 {
                     if (u.Touches(clickLocation, 2.0) && u.Team == CurrentTeam)
@@ -140,7 +169,6 @@ namespace Contingency
             }
             else
             {
-                Vector2 mouseVector = new Vector2(_mouseStateCurrent.X, _mouseStateCurrent.Y);
                 if (!_menu.Visible)
                 {
                     _menu.Visible = true;
@@ -148,21 +176,22 @@ namespace Contingency
                 }
                 else
                 {
-                    if (_menu.TouchesWithOffset(mouseVector, 1.0, _menu.Width / 2))
+                    Vector2 menuClick = clickLocation + ViewOffset;
+                    if (_menu.TouchesWithOffset(menuClick, 1.0, _menu.Width / 2))
                     {
                         Vector2 menuCenter = new Vector2(_menu.Location.X + _menu.Width / 2, _menu.Location.Y + _menu.Height / 2);
-                        switch (_menu.GetMenuSelection(mouseVector))
+                        switch (_menu.GetMenuSelection(menuClick))
                         {
                             case "Attack":
-                                selectedUnit.OrderQueue.Add(new Order(OrderType.Attack, menuCenter));
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Attack, menuCenter - ViewOffset));
                                 break;
 
                             case "Move":
-                                selectedUnit.OrderQueue.Add(new Order(OrderType.Move, menuCenter));
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Move, menuCenter - ViewOffset));
                                 break;
 
                             case "Special":
-                                selectedUnit.OrderQueue.Add(new Order(OrderType.Special, menuCenter));
+                                selectedUnit.OrderQueue.Add(new Order(OrderType.Special, menuCenter - ViewOffset));
                                 break;
 
                             case "Stop":

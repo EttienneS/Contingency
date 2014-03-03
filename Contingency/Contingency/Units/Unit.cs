@@ -104,11 +104,24 @@ namespace Contingency.Units
 
         public override Texture2D GetSprite()
         {
-            if (Team == "red")
+            switch (Special.Type)
             {
-                return Selected ? SpriteList.ContentSprites["unitRedSelected"] : SpriteList.ContentSprites["unitRed"];
+                case "blink":
+                    if (Team == "red")
+                    {
+                        return Selected ? SpriteList.ContentSprites["blinkerRedSelected"] : SpriteList.ContentSprites["blinkerRed"];
+                    }
+                    return Selected ? SpriteList.ContentSprites["blinkerBlueSelected"] : SpriteList.ContentSprites["blinkerBlue"];
+
+                case "build":
+                    if (Team == "red")
+                    {
+                        return Selected ? SpriteList.ContentSprites["builderRedSelected"] : SpriteList.ContentSprites["builderRed"];
+                    }
+                    return Selected ? SpriteList.ContentSprites["builderBlueSelected"] : SpriteList.ContentSprites["builderBlue"];
             }
-            return Selected ? SpriteList.ContentSprites["unitBlueSelected"] : SpriteList.ContentSprites["unitBlue"];
+
+            return null;
         }
 
         public void ReloadGun(float elapsedMiliSeconds)
@@ -152,7 +165,7 @@ namespace Contingency.Units
                 Projectile p = new Projectile
                 {
                     TargetAngle = TargetAngle
-                };  
+                };
 
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -5, (float)Math.Sin(p.TargetAngle) * -5);
 
@@ -164,6 +177,11 @@ namespace Contingency.Units
 
                 ShotCount++;
             }
+        }
+
+        public override string ToString()
+        {
+            return Team + " - " + Special.Type + " - " + CurrentHP + "/" + MaxHP;
         }
     }
 }

@@ -84,7 +84,7 @@ namespace Contingency
             _gameState = _lastRecievedState;
             _lastRecievedState = null;
 
-            _messages.Remove("Joining server: 192.168.137.1:11000");
+            _messages.Remove("Joining server: 11000");
         }
 
         private GameState LoadState(MemoryStream stream)
@@ -127,7 +127,7 @@ namespace Contingency
 
             Send(_oponentData, Convert.ToBase64String(SaveState(_gameState).ToArray()));
 
-            _messages.Remove("Waiting for clients on: 192.168.137.1:11000");
+            _messages.Remove("Waiting for clients on: 11000");
         }
     }
 }
