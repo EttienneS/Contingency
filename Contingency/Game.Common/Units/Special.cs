@@ -43,7 +43,7 @@ namespace Contingency.Units
             info.AddValue("Power", Power);
         }
 
-        internal void Execute(float elapsed, ref Unit owner, ref GameState gameState)
+        public void Execute(float elapsed, ref Unit owner, ref GameState gameState)
         {
             Elapsed += elapsed;
             switch (Type.ToLower())

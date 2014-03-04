@@ -13,10 +13,7 @@ namespace Contingency
 
             _spriteBatch.Begin();
 
-            DrawSprite(SpriteList.ContentSprites["background"], new Vector2(0, 0), 1.0f);
-            DrawSprite(SpriteList.ContentSprites["background"], new Vector2(1024, 768), 1.0f);
-            DrawSprite(SpriteList.ContentSprites["background"], new Vector2(1027, 0), 1.0f);
-            DrawSprite(SpriteList.ContentSprites["background"], new Vector2(0, 768), 1.0f);
+            DrawSprite(SpriteList.ContentSprites["background"], new Vector2(0, 0) + ViewOffset, 1.0f);
 
             if (!_menuMode)
             {

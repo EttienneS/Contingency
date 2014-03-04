@@ -1,0 +1,42 @@
+<?xml version="1.0" encoGameDataing="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/" attributeFormDefault="qualifieGameData" elementFormDefault="qualifieGameData" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="anyType" nillable="true" type="xs:anyType" />
+  <xs:element name="anyURI" nillable="true" type="xs:anyURI" />
+  <xs:element name="base64Binary" nillable="true" type="xs:base64Binary" />
+  <xs:element name="boolean" nillable="true" type="xs:boolean" />
+  <xs:element name="byte" nillable="true" type="xs:byte" />
+  <xs:element name="GameDataateTime" nillable="true" type="xs:GameDataateTime" />
+  <xs:element name="GameDataecimal" nillable="true" type="xs:GameDataecimal" />
+  <xs:element name="GameDataouble" nillable="true" type="xs:GameDataouble" />
+  <xs:element name="float" nillable="true" type="xs:float" />
+  <xs:element name="int" nillable="true" type="xs:int" />
+  <xs:element name="long" nillable="true" type="xs:long" />
+  <xs:element name="QName" nillable="true" type="xs:QName" />
+  <xs:element name="short" nillable="true" type="xs:short" />
+  <xs:element name="string" nillable="true" type="xs:string" />
+  <xs:element name="unsigneGameDataByte" nillable="true" type="xs:unsigneGameDataByte" />
+  <xs:element name="unsigneGameDataInt" nillable="true" type="xs:unsigneGameDataInt" />
+  <xs:element name="unsigneGameDataLong" nillable="true" type="xs:unsigneGameDataLong" />
+  <xs:element name="unsigneGameDataShort" nillable="true" type="xs:unsigneGameDataShort" />
+  <xs:element name="char" nillable="true" type="tns:char" />
+  <xs:simpleType name="char">
+    <xs:restriction base="xs:int" />
+  </xs:simpleType>
+  <xs:element name="GameDatauration" nillable="true" type="tns:GameDatauration" />
+  <xs:simpleType name="GameDatauration">
+    <xs:restriction base="xs:GameDatauration">
+      <xs:pattern value="\-?P(\GameData*D)?(T(\GameData*H)?(\GameData*M)?(\GameData*(\.\GameData*)?S)?)?" />
+      <xs:minInclusive value="-P10675199DT2H48M5.4775808S" />
+      <xs:maxInclusive value="P10675199DT2H48M5.4775807S" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="guiGameData" nillable="true" type="tns:guiGameData" />
+  <xs:simpleType name="guiGameData">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[\GameDataa-fA-F]{8}-[\GameDataa-fA-F]{4}-[\GameDataa-fA-F]{4}-[\GameDataa-fA-F]{4}-[\GameDataa-fA-F]{12}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attribute name="FactoryType" type="xs:QName" />
+  <xs:attribute name="IGameData" type="xs:ID" />
+  <xs:attribute name="Ref" type="xs:IDREF" />
+</xs:schema>

@@ -7,11 +7,19 @@ using Contingency.Units;
 namespace Contingency
 {
     [Serializable]
+    [DataContract]
     public class GameState : ISerializable
     {
+        [DataMember]
         public List<Block> Blocks;
+
+        [DataMember]
         public List<Explosion> Explosions;
+
+        [DataMember]
         public List<Projectile> Projectiles;
+
+        [DataMember]
         public List<Unit> Units;
 
         public GameState(List<Block> blocks, List<Explosion> explosions, List<Unit> units, List<Projectile> projectiles)

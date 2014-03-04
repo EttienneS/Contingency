@@ -55,7 +55,7 @@ namespace Contingency.Units
             return SpriteList.ContentSprites["block"];
         }
 
-        internal void Hit(Projectile p)
+        public void Hit(Projectile p)
         {
             if (Team != null && Team == p.Owner.Team)
                 p.Damage = 0;

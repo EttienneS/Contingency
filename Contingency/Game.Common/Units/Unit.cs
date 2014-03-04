@@ -138,7 +138,7 @@ namespace Contingency.Units
             }
         }
 
-        internal void Hit(Projectile p)
+        public void Hit(Projectile p)
         {
             if (p.Owner != null && Team == p.Owner.Team)
                 p.Damage = 0;
@@ -147,7 +147,7 @@ namespace Contingency.Units
             p.Momentum = new Vector2(0f);
         }
 
-        internal void OrderComplete()
+        public void OrderComplete()
         {
             if (OrderQueue.Count > 0)
             {
@@ -158,7 +158,7 @@ namespace Contingency.Units
             }
         }
 
-        internal void Shoot(ref List<Projectile> projectiles)
+        public void Shoot(ref List<Projectile> projectiles)
         {
             if (CanShoot)
             {

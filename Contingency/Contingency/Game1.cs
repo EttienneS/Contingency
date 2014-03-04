@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Contingency.GameDataService;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -27,6 +28,8 @@ namespace Contingency
         private SpriteBatch _spriteBatch;
         private Thread _waitJoin;
         private string CurrentTeam = "red";
+
+        public GameDataServiceClient GameData = new GameDataServiceClient();
 
         private Rectangle _view;
 
@@ -100,7 +103,7 @@ namespace Contingency
                 _gameState.Units.Add(red);
                 _gameState.Units.Add(new Unit(20, 20, _map.Width - 15, 50 + i * 55, 50, "blue"));
 
-                Special special = new Special(i%2 == 0 ? "build" : "blink", 1000, 200);
+                Special special = new Special(i % 2 == 0 ? "build" : "blink", 1000, 200);
 
                 _gameState.Units[_gameState.Units.Count - 2].Special = special;
                 _gameState.Units[_gameState.Units.Count - 1].Special = special;
@@ -175,8 +178,8 @@ namespace Contingency
 
             _messages.Add("Joining server: 11000", new Vector2(100, 100));
 
-            
-            _view = new Rectangle((_map.Width - _view.Width) * -1, 0, _view.Width,_view.Height);
+
+            _view = new Rectangle((_map.Width - _view.Width) * -1, 0, _view.Width, _view.Height);
             _waitJoin = new Thread(() => JoinServer(ServerIp));
             _waitJoin.Start();
 
