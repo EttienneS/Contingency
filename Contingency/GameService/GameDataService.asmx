@@ -1,0 +1,1 @@
+﻿<%@ WebService Language="C#" CodeBehind="GameDataService.asmx.cs" Class="GameService.GameDataService" %>

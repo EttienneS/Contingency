@@ -28,10 +28,10 @@ public class SocketManager
 
     public static int Main(String[] args)
     {
-       // Thread server = new Thread(StartListening);
+        // Thread server = new Thread(StartListening);
         Thread client = new Thread(StartClient);
 
-       // server.Start();
+        // server.Start();
         client.Start();
 
         while (client.IsAlive)

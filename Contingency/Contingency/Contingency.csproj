@@ -52,13 +52,6 @@
   <ItemGroup>
     <Compile Include="Drawing.cs" />
     <Compile Include="Inputs.cs" />
-    <Compile Include="IO.cs" />
-    <Compile Include="Service References\GameDataService\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="SocketManager.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,31 +135,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Icon.ico" />
-    <None Include="Service References\GameDataService\Contingency.GameDataService.CompositeType.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\GameDataService\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\GameDataService\configuration.svcinfo" />
-    <None Include="Service References\GameDataService\configuration91.svcinfo" />
-    <None Include="Service References\GameDataService\GameDataService.disco" />
-    <None Include="Service References\GameDataService\GameDataService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Content\Font.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Service References\GameDataService\GameDataService.wsdl" />
-    <None Include="Service References\GameDataService\GameDataService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\GameDataService\GameDataService1.xsd">
-      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -199,9 +172,6 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\GameDataService\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

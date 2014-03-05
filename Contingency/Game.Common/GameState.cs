@@ -1,79 +1,74 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Xml;
 using Contingency.Units;
 
 namespace Contingency
 {
-    [Serializable]
-    [DataContract]
-    public class GameState : ISerializable
+    public class GameState
     {
-        [DataMember]
-        public List<Block> Blocks;
+        public BlockList Blocks;
 
-        [DataMember]
-        public List<Explosion> Explosions;
+        public EffectList Effects;
 
-        [DataMember]
-        public List<Projectile> Projectiles;
+        public ProjectileList Projectiles;
 
-        [DataMember]
-        public List<Unit> Units;
+        public UnitList Units;
 
-        public GameState(List<Block> blocks, List<Explosion> explosions, List<Unit> units, List<Projectile> projectiles)
+        public GameState(BlockList blocks, EffectList effects, UnitList units, ProjectileList projectiles)
         {
             Blocks = blocks;
-            Explosions = explosions;
+            Effects = effects;
             Units = units;
             Projectiles = projectiles;
         }
 
         public GameState()
         {
-            Blocks = new List<Block>();
-            Explosions = new List<Explosion>();
-            Units = new List<Unit>();
-            Projectiles = new List<Projectile>();
+            Blocks = new BlockList();
+            Effects = new EffectList();
+            Units = new UnitList();
+            Projectiles = new ProjectileList();
         }
 
-        protected GameState(SerializationInfo information, StreamingContext context)
+        public static GameState Deserialize(XmlNode xml)
         {
-            Blocks = (List<Block>)information.GetValue("Blocks", typeof(List<Block>));
-            Explosions = (List<Explosion>)information.GetValue("Explosions", typeof(List<Explosion>));
-            Units = (List<Unit>)information.GetValue("Units", typeof(List<Unit>));
-            Projectiles = (List<Projectile>)information.GetValue("Projectiles", typeof(List<Projectile>));
-        }
+            GameState state = new GameState();
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Blocks", Blocks);
-            info.AddValue("Explosions", Explosions);
-            info.AddValue("Units", Units);
-            info.AddValue("Projectiles", Projectiles);
-        }
-
-        public static GameState ConsolidateGamesState(GameState state1, GameState state2, string fromTeam)
-        {
-            for (int i = 0; i < state1.Units.Count; i++)
+            foreach (XmlNode node in xml.ChildNodes)
             {
-                if (state1.Units[i].Team != fromTeam)
+                switch (node.Name)
                 {
-                    state1.Units.RemoveAt(i);
+                    case "BlockList":
+                        state.Blocks = BlockList.Deserialize(node);
+                        break;
+
+                    case "EffectList":
+                        state.Effects = EffectList.Deserialize(node);
+                        break;
+
+                    case "ProjectileList":
+                        state.Projectiles = ProjectileList.Deserialize(node);
+                        break;
+
+                    case "UnitList":
+                        state.Units = UnitList.Deserialize(node);
+                        break;
                 }
             }
 
-            for (int i = 0; i < state2.Units.Count; i++)
-            {
-                if (state2.Units[i].Team != fromTeam)
-                {
-                    state1.Units.Add(state2.Units[i]);
-                }
-            }
+            return state;
+        }
 
+        public XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<GameState/>");
 
-            return state1;
+            doc.DocumentElement.AppendChild(doc.ImportNode(Units.Serialize(), true));
+            doc.DocumentElement.AppendChild(doc.ImportNode(Effects.Serialize(), true));
+            doc.DocumentElement.AppendChild(doc.ImportNode(Projectiles.Serialize(), true));
+            doc.DocumentElement.AppendChild(doc.ImportNode(Blocks.Serialize(), true));
+
+            return doc.DocumentElement;
         }
     }
 }

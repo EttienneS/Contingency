@@ -1,12 +1,11 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Xml;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    [Serializable]
-    public class Block : Sprite, ISerializable
+    public class Block : Sprite
     {
         public Block(Vector2 location)
         {
@@ -18,50 +17,87 @@ namespace Contingency.Units
             CurrentHP = MaxHP;
         }
 
-        protected Block(SerializationInfo information, StreamingContext context)
-        {
-            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
-            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
-            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
-            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
-            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
-            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
-            Height = (int)information.GetValue("Height", typeof(int));
-            Width = (int)information.GetValue("Width", typeof(int));
-            Team = (string)information.GetValue("Team", typeof(string));
-            Owner = (Unit)information.GetValue("Owner", typeof(Unit));
-            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
-        }
+        public string OwnerId { get; private set; }
 
-        public Unit Owner { get; private set; }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Location", Location);
-            info.AddValue("CurrentAngle", CurrentAngle);
-            info.AddValue("TargetAngle", TargetAngle);
-            info.AddValue("Momentum", Momentum);
-            info.AddValue("MaxHP", MaxHP);
-            info.AddValue("CurrentHP", CurrentHP);
-            info.AddValue("Team", Team);
-            info.AddValue("Owner", Owner);
-            info.AddValue("CollisionRadius", CollisionRadius);
-            info.AddValue("Height", Height);
-            info.AddValue("Width", Width);
-        }
-
-        public override Texture2D GetSprite()
+        public Texture2D GetSprite()
         {
             return SpriteList.ContentSprites["block"];
         }
 
-        public void Hit(Projectile p)
+        public void Hit(Projectile p, Unit owner)
         {
-            if (Team != null && Team == p.Owner.Team)
+            if (Team != null && Team == owner.Team)
                 p.Damage = 0;
 
             CurrentHP -= p.Damage;
             p.Momentum = new Vector2(0f);
+        }
+
+        public new XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<Block/>");
+
+            doc.ImportNode(SpriteSerialize(doc, doc.DocumentElement), true);
+
+            if (OwnerId != null)
+            {
+                Helper.AddAttribute(doc, doc.DocumentElement, "OwnerId", OwnerId);
+            }
+
+            return doc.DocumentElement;
+        }
+
+        public Block()
+        { }
+
+        internal static Block Deserialize(XmlNode node)
+        {
+            Block b = new Block
+            {
+                TurnSpeed = float.Parse(Helper.GetAttribute(node, "TurnSpeed")),
+                Momentum = Helper.GetVectorAttribute(node, "Momentum"),
+                TargetAngle = float.Parse(Helper.GetAttribute(node, "TargetAngle")),
+                CollisionRadius = float.Parse(Helper.GetAttribute(node, "CollisionRadius")),
+                CurrentAngle = float.Parse(Helper.GetAttribute(node, "CurrentAngle")),
+                CurrentHP = int.Parse(Helper.GetAttribute(node, "CurrentHP")),
+                Location = Helper.GetVectorAttribute(node, "Location"),
+                MaxHP = int.Parse(Helper.GetAttribute(node, "MaxHP")),
+                Team = Helper.GetAttribute(node, "Team"),
+                Width = int.Parse(Helper.GetAttribute(node, "Width")),
+                Height = int.Parse(Helper.GetAttribute(node, "Height")),
+                OwnerId = Helper.GetAttribute(node, "OwnerId")
+            };
+
+            return b;
+        }
+    }
+
+    public class BlockList : List<Block>
+    {
+        public XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<BlockList/>");
+
+            foreach (Block b in this)
+            {
+                doc.DocumentElement.AppendChild(doc.ImportNode(b.Serialize(), true));
+            }
+
+            return doc.DocumentElement;
+        }
+
+        internal static BlockList Deserialize(XmlNode node)
+        {
+            BlockList b = new BlockList();
+
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                b.Add(Block.Deserialize(child));
+            }
+
+            return b;
         }
     }
 }

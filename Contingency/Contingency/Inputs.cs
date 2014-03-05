@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Xml;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -18,6 +19,16 @@ namespace Contingency
                 Exit();
             }
 
+            if (Keyboard.GetState().IsKeyDown(Keys.F5))
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml("<Root/>");
+                doc.DocumentElement.AppendChild(doc.ImportNode(_gameState.Serialize(), true));
+                doc.Save("c:\\test.xml");
+
+                _gameState = GameState.Deserialize(doc.DocumentElement.ChildNodes[0]);
+            }
+
             CatchViewMove();
 
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
@@ -29,33 +40,6 @@ namespace Contingency
             if (_waitJoin != null && _waitJoin.IsAlive)
             {
                 return;
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.F5))
-            {
-                // save / load example
-                MemoryStream state = SaveState(_gameState);
-                state.Seek(0, SeekOrigin.Begin);
-                using (FileStream file = new FileStream(@"c:\file.bin", FileMode.Create, FileAccess.Write))
-                {
-                    byte[] bytes = new byte[state.Length];
-                    state.Read(bytes, 0, (int)state.Length);
-                    file.Write(bytes, 0, bytes.Length);
-                    //state.Close();
-                }
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.F8))
-            {
-                using (MemoryStream ms = new MemoryStream())
-                using (FileStream file = new FileStream(@"c:\file.bin", FileMode.Open, FileAccess.Read))
-                {
-                    byte[] bytes = new byte[file.Length];
-                    file.Read(bytes, 0, (int)file.Length);
-                    ms.Write(bytes, 0, (int)file.Length);
-
-                    _gameState = LoadState(ms);
-                }
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
@@ -120,27 +104,10 @@ namespace Contingency
 
         private void EndTurnClicked(object sender, EventArgs e)
         {
-            _messages.Add("Waiting for opponent", new Vector2(100, 100));
+         //   _messages.Add("Waiting for opponent", new Vector2(100, 100));
 
-            if (Server)
-            {
-                GameState state = ConsolidateOponentData();
-                _gameState = state;
-            }
-            else
-            {
-                GameState state = ConsolidateServerData();
-                _lastRecievedState = null;
-                _gameState = state;
-            }
-
-            _messages.Remove("Waiting for opponent");
-
-            if (_inPlanningMode)
-            {
-                _inPlanningMode = false;
-                _remainingPlayTime = TotalPlayTime;
-            }
+            _inPlanningMode = false;
+            _remainingPlayTime = 5000;
         }
 
         private void MouseClickedGame()

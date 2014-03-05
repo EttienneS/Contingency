@@ -31,15 +31,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Lidgren.Network, Version=2011.3.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>../../../../../../../Program%20Files%20(x86)/MonoGame/v3.0/Assemblies/WindowsGL/Lidgren.Network.dll</HintPath>
+    </Reference>
     <Reference Include="MonoGame.Framework, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>../../../../../../../Program%20Files%20(x86)/MonoGame/v3.0/Assemblies/WindowsGL/OpenTK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Tao.Sdl, Version=1.2.13.0, Culture=neutral, PublicKeyToken=9c7a200e36c0094e, processorArchitecture=MSIL">
+      <HintPath>../../../../../../../Program%20Files%20(x86)/MonoGame/v3.0/Assemblies/WindowsGL/Tao.Sdl.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Button.cs" />
@@ -50,7 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpriteList.cs" />
     <Compile Include="Units\Block.cs" />
-    <Compile Include="Units\Explosion.cs" />
+    <Compile Include="Units\Effect.cs" />
     <Compile Include="Units\Projectile.cs" />
     <Compile Include="Units\Special.cs" />
     <Compile Include="Units\Sprite.cs" />

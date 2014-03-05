@@ -1,17 +1,16 @@
 ﻿using System;
+using System.Xml;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    [Serializable]
-    public abstract class Sprite
+    public class Sprite
     {
         public Vector2 Momentum = new Vector2(0f);
 
         public float TargetAngle;
 
-        private const float TurnSpeed = 0.05f;
+        public float TurnSpeed = 0.05f;
 
         private double _collisionRadius;
 
@@ -29,7 +28,7 @@ namespace Contingency.Units
 
         public int Width { get; set; }
 
-        protected double CollisionRadius
+        public double CollisionRadius
         {
             get
             {
@@ -49,8 +48,6 @@ namespace Contingency.Units
         {
             return (Math.Abs(f1 - f2) <= precision);
         }
-
-        public abstract Texture2D GetSprite();
 
         public void Target(Vector2 target)
         {
@@ -133,6 +130,23 @@ namespace Contingency.Units
             }
 
             Location += Momentum;
+        }
+
+        public XmlNode SpriteSerialize(XmlDocument doc, XmlNode node)
+        {
+            Helper.AddAttribute(doc, node, "Momentum", Momentum);
+            Helper.AddAttribute(doc, node, "TargetAngle", TargetAngle.ToString());
+            Helper.AddAttribute(doc, node, "TurnSpeed", TurnSpeed.ToString());
+            Helper.AddAttribute(doc, node, "CollisionRadius", CollisionRadius.ToString());
+            Helper.AddAttribute(doc, node, "CurrentAngle", CurrentAngle.ToString());
+            Helper.AddAttribute(doc, node, "CurrentHP", CurrentHP.ToString());
+            Helper.AddAttribute(doc, node, "Location", Location);
+            Helper.AddAttribute(doc, node, "MaxHP", MaxHP.ToString());
+            Helper.AddAttribute(doc, node, "Team", Team);
+            Helper.AddAttribute(doc, node, "Width", Width.ToString());
+            Helper.AddAttribute(doc, node, "Height", Height.ToString());
+
+            return doc.DocumentElement;
         }
     }
 }

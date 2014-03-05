@@ -1,12 +1,10 @@
-﻿using System;
-using System.Runtime.Serialization;
-using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using System.Xml;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    [Serializable]
-    public class Projectile : Sprite, ISerializable
+    public class Projectile : Sprite
     {
         public Projectile(int damage)
         {
@@ -19,49 +17,76 @@ namespace Contingency.Units
             CollisionRadius = Width / 2;
         }
 
-        protected Projectile(SerializationInfo information, StreamingContext context)
-        {
-            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
-            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
-            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
-            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
-            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
-            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
-            Height = (int)information.GetValue("Height", typeof(int));
-            Width = (int)information.GetValue("Width", typeof(int));
-            Team = (string)information.GetValue("Team", typeof(string));
-            Owner = (Unit)information.GetValue("Owner", typeof(Unit));
-            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
-            Damage = (int)information.GetValue("Damage", typeof(int));
-        }
-
         public int Damage { get; set; }
 
-        public Unit Owner
+        public string OwnerId { get; set; }
+
+        public Texture2D GetSprite(Unit owner)
         {
-            get;
-            set;
+            return owner.BulletSprite;
         }
 
-        public void GetObjectData(SerializationInfo information, StreamingContext context)
+        internal XmlNode Serialize()
         {
-            information.AddValue("Location", Location);
-            information.AddValue("CurrentAngle", CurrentAngle);
-            information.AddValue("TargetAngle", TargetAngle);
-            information.AddValue("Momentum", Momentum);
-            information.AddValue("MaxHP", MaxHP);
-            information.AddValue("CurrentHP", CurrentHP);
-            information.AddValue("Team", Team);
-            information.AddValue("CollisionRadius", CollisionRadius);
-            information.AddValue("Height", Height);
-            information.AddValue("Width", Width);
-            information.AddValue("Owner", Owner);
-            information.AddValue("Damage", Damage);
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<Projectile/>");
+
+            doc.ImportNode(SpriteSerialize(doc, doc.DocumentElement), true);
+
+            Helper.AddAttribute(doc, doc.DocumentElement, "Damage", Damage.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "OwnerId", OwnerId);
+
+            return doc.DocumentElement;
         }
 
-        public override Texture2D GetSprite()
+        internal static Projectile Deserialize(XmlNode node)
         {
-            return Owner.BulletSprite;
+            Projectile p = new Projectile
+            {
+                TurnSpeed = float.Parse(Helper.GetAttribute(node, "TurnSpeed")),
+                Momentum = Helper.GetVectorAttribute(node, "Momentum"),
+                TargetAngle = float.Parse(Helper.GetAttribute(node, "TargetAngle")),
+                CollisionRadius = float.Parse(Helper.GetAttribute(node, "CollisionRadius")),
+                CurrentAngle = float.Parse(Helper.GetAttribute(node, "CurrentAngle")),
+                CurrentHP = int.Parse(Helper.GetAttribute(node, "CurrentHP")),
+                Location = Helper.GetVectorAttribute(node, "Location"),
+                MaxHP = int.Parse(Helper.GetAttribute(node, "MaxHP")),
+                Team = Helper.GetAttribute(node, "Team"),
+                Width = int.Parse(Helper.GetAttribute(node, "Width")),
+                Height = int.Parse(Helper.GetAttribute(node, "Height")),
+                Damage = int.Parse(Helper.GetAttribute(node, "Damage")),
+                OwnerId = Helper.GetAttribute(node, "OwnerId")
+            };
+
+            return p;
+        }
+    }
+
+    public class ProjectileList : List<Projectile>
+    {
+        public XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<ProjectileList/>");
+
+            foreach (Projectile p in this)
+            {
+                doc.DocumentElement.AppendChild(doc.ImportNode(p.Serialize(), true));
+            }
+
+            return doc.DocumentElement;
+        }
+
+        internal static ProjectileList Deserialize(XmlNode node)
+        {
+            ProjectileList p = new ProjectileList();
+
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                p.Add(Projectile.Deserialize(child));
+            }
+
+            return p;
         }
     }
 }

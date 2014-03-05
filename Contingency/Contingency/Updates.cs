@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 namespace Contingency
 {
-    public partial class Game1 : Game
+    public partial class Game1 : Microsoft.Xna.Framework.Game
     {
         protected override void Update(GameTime gameTime)
         {
@@ -41,7 +41,7 @@ namespace Contingency
             }
         }
 
-        private  Unit GetSelctedUnit()
+        private Unit GetSelctedUnit()
         {
             foreach (Unit unit in _gameState.Units)
             {
@@ -54,13 +54,13 @@ namespace Contingency
             return null;
         }
 
-        private  void UpdateDeaths()
+        private void UpdateDeaths()
         {
             for (int i = 0; i < _gameState.Units.Count; i++)
             {
                 if (_gameState.Units[i].CurrentHP <= 0)
                 {
-                    _gameState.Explosions.Add(new Explosion(new Vector2(_gameState.Units[i].Location.X - _gameState.Units[i].Width / 2, _gameState.Units[i].Location.Y - _gameState.Units[i].Height / 2)));
+                    _gameState.Effects.Add(new Effect(new Vector2(_gameState.Units[i].Location.X - _gameState.Units[i].Width / 2, _gameState.Units[i].Location.Y - _gameState.Units[i].Height / 2)));
                     _gameState.Units.RemoveAt(i);
                     i--;
                 }
@@ -70,21 +70,21 @@ namespace Contingency
             {
                 if (_gameState.Blocks[i].CurrentHP <= 0)
                 {
-                    _gameState.Explosions.Add(new Explosion(new Vector2(_gameState.Blocks[i].Location.X - _gameState.Blocks[i].Width / 2, _gameState.Blocks[i].Location.Y - _gameState.Blocks[i].Height / 2)));
+                    _gameState.Effects.Add(new Effect(new Vector2(_gameState.Blocks[i].Location.X - _gameState.Blocks[i].Width / 2, _gameState.Blocks[i].Location.Y - _gameState.Blocks[i].Height / 2)));
                     _gameState.Blocks.RemoveAt(i);
                     i--;
                 }
             }
         }
 
-        private  void UpdateExplosions(GameTime gameTime)
+        private void UpdateExplosions(GameTime gameTime)
         {
-            for (int x = 0; x < _gameState.Explosions.Count; x++)
+            for (int x = 0; x < _gameState.Effects.Count; x++)
             {
-                Explosion exp = _gameState.Explosions[x];
+                Effect exp = _gameState.Effects[x];
                 if (exp.Done)
                 {
-                    _gameState.Explosions.Remove(exp);
+                    _gameState.Effects.Remove(exp);
                     x--;
                 }
                 else
@@ -110,9 +110,9 @@ namespace Contingency
                 bool hitUnit = false;
                 foreach (Unit u in _gameState.Units)
                 {
-                    if (u.Touches(p) && p.Owner != u)
+                    if (u.Touches(p) && p.OwnerId != u.ID)
                     {
-                        u.Hit(p);
+                        u.Hit(p, _gameState.Units[p.OwnerId]);
                         hitUnit = true;
                         break;
                     }
@@ -122,9 +122,9 @@ namespace Contingency
                 {
                     foreach (Block b in _gameState.Blocks)
                     {
-                        if (b.Touches(p) && p.Owner != b.Owner)
+                        if (b.Touches(p) && p.OwnerId != b.OwnerId)
                         {
-                            b.Hit(p);
+                            b.Hit(p, _gameState.Units[p.OwnerId]);
                             break;
                         }
                     }

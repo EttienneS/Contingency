@@ -51,7 +51,7 @@ namespace Contingency
             return string.Empty;
         }
 
-        public override Texture2D GetSprite()
+        public Texture2D GetSprite()
         {
             return SpriteList.ContentSprites["menu"];
         }

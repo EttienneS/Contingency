@@ -6,14 +6,15 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using Contingency;
+using Contingency.Units;
 
 namespace GameHost
 {
     public class GameDataService : IGameDataService
     {
-        public GameState GetGameState(string id)
+        public Special GetGameState(string id)
         {
-            return null;
+            return new Special("sfasdf", 1f,2f);
         }
 
         public void SendGameState(string id)

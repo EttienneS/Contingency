@@ -2,6 +2,7 @@
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Effect = Contingency.Units.Effect;
 
 namespace Contingency
 {
@@ -59,7 +60,7 @@ namespace Contingency
 
         private void DrawExplosions()
         {
-            foreach (Explosion exp in _gameState.Explosions)
+            foreach (Effect exp in _gameState.Effects)
             {
                 if (exp != null)
                     _spriteBatch.Draw(exp.SpriteSheet, new Rectangle((int)exp.Location.X - 32 + (int)ViewOffset.X, (int)exp.Location.Y - 32 + (int)ViewOffset.Y, exp.SpriteWidth, exp.SpriteHeight), exp.SpriteRect, Color.White);
@@ -85,10 +86,10 @@ namespace Contingency
 
         private void DrawProjectiles()
         {
-            foreach (Projectile sprite in _gameState.Projectiles)
+            foreach (Projectile projectile in _gameState.Projectiles)
             {
-                if (sprite != null)
-                    _spriteBatch.Draw(sprite.GetSprite(), sprite.Location + ViewOffset, null, Color.White, sprite.CurrentAngle, new Vector2(sprite.Width / 2, sprite.Height / 2), 1.0f, SpriteEffects.None, 0f);
+                if (projectile != null)
+                    _spriteBatch.Draw(projectile.GetSprite(_gameState.Units[projectile.OwnerId]), projectile.Location + ViewOffset, null, Color.White, projectile.CurrentAngle, new Vector2(projectile.Width / 2, projectile.Height / 2), 1.0f, SpriteEffects.None, 0f);
             }
         }
 
@@ -134,7 +135,7 @@ namespace Contingency
                     float spesLoc = u.Location.Y + u.Height - 9;
                     Vector2 startPointSpes = new Vector2(u.Location.X - u.Width / 2, spesLoc);
                     Vector2 endPointSpes = new Vector2(startPoint.X + u.Width, spesLoc);
-                    Vector2 endPointSpeTot = new Vector2(startPoint.X + (u.Width * (u.Special.Elapsed / u.Special.CoolDown)), spesLoc);
+                    Vector2 endPointSpeTot = new Vector2(startPoint.X + (u.Width * (u.Special.Elapsed / u.Special.Cooldown)), spesLoc);
 
                     DrawLine(_spriteBatch, startPointSpes + ViewOffset, endPointSpes + ViewOffset, Color.DarkBlue, 3);
                     DrawLine(_spriteBatch, startPointSpes + ViewOffset, endPointSpeTot + ViewOffset, Color.Cyan, 3);
@@ -207,6 +208,5 @@ namespace Contingency
                 }
             }
         }
-
     }
 }

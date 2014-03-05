@@ -6,6 +6,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using Contingency;
+using Contingency.Units;
 
 namespace GameHost
 {
@@ -13,7 +14,7 @@ namespace GameHost
     public interface IGameDataService
     {
         [OperationContract]
-        GameState GetGameState(string id);
+        Special GetGameState(string id);
 
         [OperationContract]
         void SendGameState(string id);

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Contingency.GameDataService;
+using System.Xml;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,10 +11,6 @@ namespace Contingency
 {
     public partial class Game1
     {
-        public const string ClientIp = "192.168.137.1";
-        public const string ServerIp = "192.168.137.1";
-
-        public bool Server;
         private const int TotalPlayTime = 5000;
         private readonly ButtonList _buttons = new ButtonList();
         private readonly Menu _menu = new Menu();
@@ -28,8 +24,7 @@ namespace Contingency
         private SpriteBatch _spriteBatch;
         private Thread _waitJoin;
         private string CurrentTeam = "red";
-
-        public GameDataServiceClient GameData = new GameDataServiceClient();
+        private string _currentGameId = "aaaaaaaaaaaaaaaaaaaaa";
 
         private Rectangle _view;
 
@@ -114,11 +109,6 @@ namespace Contingency
             GenerateStage(800, 0, 0, 3, 3); // small blocks
         }
 
-        protected override void UnloadContent()
-        {
-            SocketManager.Stop = true;
-        }
-
         private void GenerateStage(int maxBlocks, int minWidth, int minHeight, int maxWidth, int maxHeight)
         {
             int currentBlockCounter = 0;
@@ -171,42 +161,13 @@ namespace Contingency
 
         private void JoinGame()
         {
-            Server = false;
-            CurrentTeam = "blue";
-
-            StartListener(12000);
-
-            _messages.Add("Joining server: 11000", new Vector2(100, 100));
-
-
-            _view = new Rectangle((_map.Width - _view.Width) * -1, 0, _view.Width, _view.Height);
-            _waitJoin = new Thread(() => JoinServer(ServerIp));
-            _waitJoin.Start();
-
             ToggleMenuMode(false);
         }
 
         private void StartGame()
         {
-            Server = true;
-
             CreateStage();
-
-            StartListener(11000);
-
-            _messages.Add("Waiting for clients on: 11000", new Vector2(100, 100));
-
-            _waitJoin = new Thread(WaitForOpponentToJoin);
-            _waitJoin.Start();
-
             ToggleMenuMode(false);
-        }
-
-        private void StartListener(int port)
-        {
-            Thread listener = new Thread(() => SocketManager.StartListening(ClientIp, port));
-            listener.Start();
-            SocketManager.DataRecieved += SocketManager_DataRecieved;
         }
 
         private void ToggleMenuMode(bool enabled)

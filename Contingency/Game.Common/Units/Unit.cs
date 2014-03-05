@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Linq;
+using System.Xml;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Contingency.Units
 {
-    [Serializable]
-    public class Unit : Sprite, ISerializable
+    public class Unit : Sprite
     {
         public Unit(int width, int height, int x, int y, int maxHp, string teamName)
         {
@@ -20,31 +20,12 @@ namespace Contingency.Units
             CollisionRadius = width / 2;
             Team = teamName;
 
-            OrderQueue = new List<Order>();
+            OrderQueue = new OrderList();
             ShotCount = 0;
             ShootRate = 200;
             CanShoot = true;
-        }
 
-        protected Unit(SerializationInfo information, StreamingContext context)
-        {
-            OrderQueue = new List<Order>();
-
-            Location = (Vector2)information.GetValue("Location", typeof(Vector2));
-            CurrentAngle = (float)information.GetValue("CurrentAngle", typeof(float));
-            TargetAngle = (float)information.GetValue("TargetAngle", typeof(float));
-            Momentum = (Vector2)information.GetValue("Momentum", typeof(Vector2));
-            MaxHP = (int)information.GetValue("MaxHP", typeof(int));
-            CurrentHP = (int)information.GetValue("CurrentHP", typeof(int));
-            Height = (int)information.GetValue("Height", typeof(int));
-            Width = (int)information.GetValue("Width", typeof(int));
-            OrderQueue = (List<Order>)information.GetValue("OrderQueue", typeof(List<Order>));
-            Team = (string)information.GetValue("Team", typeof(string));
-            CollisionRadius = (double)information.GetValue("CollisionRadius", typeof(double));
-            CanShoot = (bool)information.GetValue("CanShoot", typeof(bool));
-            ShootRate = (float)information.GetValue("ShootRate", typeof(float));
-            ShotCount = (int)information.GetValue("ShotCount", typeof(int));
-            Special = (Special)information.GetValue("Special", typeof(Special));
+            ID = Guid.NewGuid().ToString();
         }
 
         public Texture2D BulletSprite
@@ -69,7 +50,9 @@ namespace Contingency.Units
             }
         }
 
-        public List<Order> OrderQueue { get; private set; }
+        public string ID { get; set; }
+
+        public OrderList OrderQueue { get; private set; }
 
         public bool Selected { get; set; }
 
@@ -83,26 +66,7 @@ namespace Contingency.Units
 
         private float ShootTimer { get; set; }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Location", Location);
-            info.AddValue("CurrentAngle", CurrentAngle);
-            info.AddValue("TargetAngle", TargetAngle);
-            info.AddValue("Momentum", Momentum);
-            info.AddValue("MaxHP", MaxHP);
-            info.AddValue("CurrentHP", CurrentHP);
-            info.AddValue("OrderQueue", OrderQueue);
-            info.AddValue("Team", Team);
-            info.AddValue("CollisionRadius", CollisionRadius);
-            info.AddValue("Height", Height);
-            info.AddValue("Width", Width);
-            info.AddValue("CanShoot", CanShoot);
-            info.AddValue("ShootRate", ShootRate);
-            info.AddValue("ShotCount", ShotCount);
-            info.AddValue("Special", Special);
-        }
-
-        public override Texture2D GetSprite()
+        public Texture2D GetSprite()
         {
             switch (Special.Type)
             {
@@ -124,23 +88,9 @@ namespace Contingency.Units
             return null;
         }
 
-        public void ReloadGun(float elapsedMiliSeconds)
+        public void Hit(Projectile p, Unit owner)
         {
-            if (!CanShoot)
-            {
-                ShootTimer += elapsedMiliSeconds;
-
-                if (ShootTimer > ShootRate)
-                {
-                    ShootTimer = 0;
-                    CanShoot = true;
-                }
-            }
-        }
-
-        public void Hit(Projectile p)
-        {
-            if (p.Owner != null && Team == p.Owner.Team)
+            if (owner != null && Team == owner.Team)
                 p.Damage = 0;
 
             CurrentHP -= p.Damage;
@@ -158,7 +108,21 @@ namespace Contingency.Units
             }
         }
 
-        public void Shoot(ref List<Projectile> projectiles)
+        public void ReloadGun(float elapsedMiliSeconds)
+        {
+            if (!CanShoot)
+            {
+                ShootTimer += elapsedMiliSeconds;
+
+                if (ShootTimer > ShootRate)
+                {
+                    ShootTimer = 0;
+                    CanShoot = true;
+                }
+            }
+        }
+
+        public void Shoot(ref ProjectileList projectiles)
         {
             if (CanShoot)
             {
@@ -170,7 +134,7 @@ namespace Contingency.Units
                 p.Momentum = new Vector2((float)Math.Cos(p.TargetAngle) * -5, (float)Math.Sin(p.TargetAngle) * -5);
 
                 p.Location = Location;
-                p.Owner = this;
+                p.OwnerId = ID;
 
                 CanShoot = false;
                 projectiles.Add(p);
@@ -182,6 +146,91 @@ namespace Contingency.Units
         public override string ToString()
         {
             return Team + " - " + Special.Type + " - " + CurrentHP + "/" + MaxHP;
+        }
+
+        internal XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<Unit/>");
+
+            doc.ImportNode(SpriteSerialize(doc, doc.DocumentElement), true);
+
+            Helper.AddAttribute(doc, doc.DocumentElement, "Selected", Selected.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "ShotCount", ShotCount.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "CanShoot", CanShoot.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "ShootRate", ShootRate.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "ShootTimer", ShootTimer.ToString());
+            Helper.AddAttribute(doc, doc.DocumentElement, "ID", ID);
+
+            doc.DocumentElement.AppendChild(doc.ImportNode(Special.Serialize(), true));
+            doc.DocumentElement.AppendChild(doc.ImportNode(OrderQueue.Serialize(), true));
+
+            return doc.DocumentElement;
+        }
+
+        public Unit()
+        { }
+
+        internal static Unit Deserialize(XmlNode node)
+        {
+            Unit u = new Unit
+            {
+                TurnSpeed = float.Parse(Helper.GetAttribute(node, "TurnSpeed")),
+                Momentum = Helper.GetVectorAttribute(node, "Momentum"),
+                TargetAngle = float.Parse(Helper.GetAttribute(node, "TargetAngle")),
+                CollisionRadius = float.Parse(Helper.GetAttribute(node, "CollisionRadius")),
+                CurrentAngle = float.Parse(Helper.GetAttribute(node, "CurrentAngle")),
+                CurrentHP = int.Parse(Helper.GetAttribute(node, "CurrentHP")),
+                Location = Helper.GetVectorAttribute(node, "Location"),
+                MaxHP = int.Parse(Helper.GetAttribute(node, "MaxHP")),
+                Team = Helper.GetAttribute(node, "Team"),
+                Width = int.Parse(Helper.GetAttribute(node, "Width")),
+                Height = int.Parse(Helper.GetAttribute(node, "Height")),
+                Selected = bool.Parse(Helper.GetAttribute(node, "Selected")),
+                ShotCount = int.Parse(Helper.GetAttribute(node, "ShotCount")),
+                CanShoot = bool.Parse(Helper.GetAttribute(node, "CanShoot")),
+                ShootRate = float.Parse(Helper.GetAttribute(node, "ShootRate")),
+                ShootTimer = float.Parse(Helper.GetAttribute(node, "ShootTimer")),
+                ID = Helper.GetAttribute(node, "ID")
+            };
+
+            u.Special = Special.Deserialize(node.SelectSingleNode("Special"));
+            u.OrderQueue = OrderList.Deserialize(node.SelectSingleNode("OrderList"));
+
+            return u;
+        }
+    }
+
+    public class UnitList : List<Unit>
+    {
+        public Unit this[string id]
+        {
+            get { return this.First(unit => unit.ID == id); }
+        }
+
+        public XmlNode Serialize()
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml("<UnitList/>");
+
+            foreach (Unit u in this)
+            {
+                doc.DocumentElement.AppendChild(doc.ImportNode(u.Serialize(), true));
+            }
+
+            return doc.DocumentElement;
+        }
+
+        internal static UnitList Deserialize(XmlNode node)
+        {
+            UnitList u = new UnitList();
+
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                u.Add(Unit.Deserialize(child));
+            }
+
+            return u;
         }
     }
 }
