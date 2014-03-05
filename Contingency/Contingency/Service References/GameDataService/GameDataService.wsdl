@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="GetState">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetStateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetStateResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTurnData">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTurnDataResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTurnDataResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTeam">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTeamResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTeamResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendState">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="state">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="team" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendStateResponse">
+        <s:complexType />
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetStateSoapIn">
+    <wsdl:part name="parameters" element="tns:GetState" />
+  </wsdl:message>
+  <wsdl:message name="GetStateSoapOut">
+    <wsdl:part name="parameters" element="tns:GetStateResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTurnDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTurnData" />
+  </wsdl:message>
+  <wsdl:message name="GetTurnDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTurnDataResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTeamSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTeam" />
+  </wsdl:message>
+  <wsdl:message name="GetTeamSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTeamResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendStateSoapIn">
+    <wsdl:part name="parameters" element="tns:SendState" />
+  </wsdl:message>
+  <wsdl:message name="SendStateSoapOut">
+    <wsdl:part name="parameters" element="tns:SendStateResponse" />
+  </wsdl:message>
+  <wsdl:portType name="GameDataServiceSoap">
+    <wsdl:operation name="GetState">
+      <wsdl:input message="tns:GetStateSoapIn" />
+      <wsdl:output message="tns:GetStateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTurnData">
+      <wsdl:input message="tns:GetTurnDataSoapIn" />
+      <wsdl:output message="tns:GetTurnDataSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTeam">
+      <wsdl:input message="tns:GetTeamSoapIn" />
+      <wsdl:output message="tns:GetTeamSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendState">
+      <wsdl:input message="tns:SendStateSoapIn" />
+      <wsdl:output message="tns:SendStateSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="GameDataServiceSoap" type="tns:GameDataServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetState">
+      <soap:operation soapAction="http://tempuri.org/GetState" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTurnData">
+      <soap:operation soapAction="http://tempuri.org/GetTurnData" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTeam">
+      <soap:operation soapAction="http://tempuri.org/GetTeam" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendState">
+      <soap:operation soapAction="http://tempuri.org/SendState" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="GameDataServiceSoap12" type="tns:GameDataServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetState">
+      <soap12:operation soapAction="http://tempuri.org/GetState" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTurnData">
+      <soap12:operation soapAction="http://tempuri.org/GetTurnData" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTeam">
+      <soap12:operation soapAction="http://tempuri.org/GetTeam" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendState">
+      <soap12:operation soapAction="http://tempuri.org/SendState" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="GameDataService">
+    <wsdl:port name="GameDataServiceSoap" binding="tns:GameDataServiceSoap">
+      <soap:address location="http://localhost:55673/GameDataService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="GameDataServiceSoap12" binding="tns:GameDataServiceSoap12">
+      <soap12:address location="http://localhost:55673/GameDataService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

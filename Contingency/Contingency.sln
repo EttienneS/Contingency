@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contingency", "Contingency\Contingency.csproj", "{82371B6C-799F-41C4-B6CF-ABB7BBCEA895}"
+	ProjectSection(ProjectDependencies) = postProject
+		{469B2A18-A7FF-46F1-967B-6C97A042F1E2} = {469B2A18-A7FF-46F1-967B-6C97A042F1E2}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketTester", "SocketTester\SocketTester.csproj", "{E093C33E-5A6D-407C-8E88-6235E673518D}"
 EndProject

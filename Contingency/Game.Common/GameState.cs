@@ -13,14 +13,6 @@ namespace Contingency
 
         public UnitList Units;
 
-        public GameState(BlockList blocks, EffectList effects, UnitList units, ProjectileList projectiles)
-        {
-            Blocks = blocks;
-            Effects = effects;
-            Units = units;
-            Projectiles = projectiles;
-        }
-
         public GameState()
         {
             Blocks = new BlockList();
@@ -33,27 +25,10 @@ namespace Contingency
         {
             GameState state = new GameState();
 
-            foreach (XmlNode node in xml.ChildNodes)
-            {
-                switch (node.Name)
-                {
-                    case "BlockList":
-                        state.Blocks = BlockList.Deserialize(node);
-                        break;
-
-                    case "EffectList":
-                        state.Effects = EffectList.Deserialize(node);
-                        break;
-
-                    case "ProjectileList":
-                        state.Projectiles = ProjectileList.Deserialize(node);
-                        break;
-
-                    case "UnitList":
-                        state.Units = UnitList.Deserialize(node);
-                        break;
-                }
-            }
+            state.Blocks = BlockList.Deserialize(xml.SelectSingleNode("BlockList"));
+            state.Effects = EffectList.Deserialize(xml.SelectSingleNode("EffectList"));
+            state.Projectiles = ProjectileList.Deserialize(xml.SelectSingleNode("ProjectileList"));
+            state.Units = UnitList.Deserialize(xml.SelectSingleNode("UnitList"));
 
             return state;
         }

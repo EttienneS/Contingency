@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ServiceModel;
 using System.Threading;
 using System.Xml;
+using Contingency.GameDataService;
 using Contingency.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,6 +27,10 @@ namespace Contingency
         private Thread _waitJoin;
         private string CurrentTeam = "red";
         private string _currentGameId = "aaaaaaaaaaaaaaaaaaaaa";
+        private string _playerId = Environment.MachineName;
+
+        public GameDataServiceSoapClient DataService = new GameDataServiceSoapClient();
+
 
         private Rectangle _view;
 
@@ -159,14 +165,42 @@ namespace Contingency
             }
         }
 
+        private void EndTurnClicked(object sender, EventArgs e)
+        {
+            _messages.Add("Waiting for opponent", new Vector2(100, 100));
+            DataService.SendState(_currentGameId, (XmlElement)_gameState.Serialize(), _playerId, CurrentTeam);
+
+            _inPlanningMode = false;
+            _remainingPlayTime = 5000;
+
+            WaitThread = new Thread(WaitForOppent);
+            WaitThread.Start();
+        }
+
+        public Thread WaitThread;
+        public void WaitForOppent()
+        {
+            // GameState state = GameState.Deserialize(DataService.GetTurnData(_currentGameId, _playerId));
+
+            while (true)
+            {
+                Thread.Sleep(5);
+            }
+        }
+
         private void JoinGame()
         {
+            _gameState = GameState.Deserialize(DataService.GetState(_currentGameId, _playerId));
+            CurrentTeam = DataService.GetTeam(_currentGameId, _playerId);
+
             ToggleMenuMode(false);
         }
 
         private void StartGame()
         {
             CreateStage();
+            DataService.SendState(_currentGameId, (XmlElement)_gameState.Serialize(), _playerId, CurrentTeam);
+
             ToggleMenuMode(false);
         }
 
