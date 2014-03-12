@@ -23,7 +23,7 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="GetTurnData">
+      <s:element name="GetRefreshedData">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
@@ -31,10 +31,10 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="GetTurnDataResponse">
+      <s:element name="GetRefreshedDataResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="GetTurnDataResult">
+            <s:element minOccurs="0" maxOccurs="1" name="GetRefreshedDataResult">
               <s:complexType mixed="true">
                 <s:sequence>
                   <s:any />
@@ -76,7 +76,42 @@
         </s:complexType>
       </s:element>
       <s:element name="SendStateResponse">
-        <s:complexType />
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SendStateResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="NeedsTurn">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="team" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="NeedsTurnResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="NeedsTurnResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RefreshAvailable">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="gameId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="playerId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RefreshAvailableResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="RefreshAvailableResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
       </s:element>
     </s:schema>
   </wsdl:types>
@@ -86,11 +121,11 @@
   <wsdl:message name="GetStateSoapOut">
     <wsdl:part name="parameters" element="tns:GetStateResponse" />
   </wsdl:message>
-  <wsdl:message name="GetTurnDataSoapIn">
-    <wsdl:part name="parameters" element="tns:GetTurnData" />
+  <wsdl:message name="GetRefreshedDataSoapIn">
+    <wsdl:part name="parameters" element="tns:GetRefreshedData" />
   </wsdl:message>
-  <wsdl:message name="GetTurnDataSoapOut">
-    <wsdl:part name="parameters" element="tns:GetTurnDataResponse" />
+  <wsdl:message name="GetRefreshedDataSoapOut">
+    <wsdl:part name="parameters" element="tns:GetRefreshedDataResponse" />
   </wsdl:message>
   <wsdl:message name="GetTeamSoapIn">
     <wsdl:part name="parameters" element="tns:GetTeam" />
@@ -104,14 +139,26 @@
   <wsdl:message name="SendStateSoapOut">
     <wsdl:part name="parameters" element="tns:SendStateResponse" />
   </wsdl:message>
+  <wsdl:message name="NeedsTurnSoapIn">
+    <wsdl:part name="parameters" element="tns:NeedsTurn" />
+  </wsdl:message>
+  <wsdl:message name="NeedsTurnSoapOut">
+    <wsdl:part name="parameters" element="tns:NeedsTurnResponse" />
+  </wsdl:message>
+  <wsdl:message name="RefreshAvailableSoapIn">
+    <wsdl:part name="parameters" element="tns:RefreshAvailable" />
+  </wsdl:message>
+  <wsdl:message name="RefreshAvailableSoapOut">
+    <wsdl:part name="parameters" element="tns:RefreshAvailableResponse" />
+  </wsdl:message>
   <wsdl:portType name="GameDataServiceSoap">
     <wsdl:operation name="GetState">
       <wsdl:input message="tns:GetStateSoapIn" />
       <wsdl:output message="tns:GetStateSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="GetTurnData">
-      <wsdl:input message="tns:GetTurnDataSoapIn" />
-      <wsdl:output message="tns:GetTurnDataSoapOut" />
+    <wsdl:operation name="GetRefreshedData">
+      <wsdl:input message="tns:GetRefreshedDataSoapIn" />
+      <wsdl:output message="tns:GetRefreshedDataSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="GetTeam">
       <wsdl:input message="tns:GetTeamSoapIn" />
@@ -120,6 +167,14 @@
     <wsdl:operation name="SendState">
       <wsdl:input message="tns:SendStateSoapIn" />
       <wsdl:output message="tns:SendStateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="NeedsTurn">
+      <wsdl:input message="tns:NeedsTurnSoapIn" />
+      <wsdl:output message="tns:NeedsTurnSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RefreshAvailable">
+      <wsdl:input message="tns:RefreshAvailableSoapIn" />
+      <wsdl:output message="tns:RefreshAvailableSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="GameDataServiceSoap" type="tns:GameDataServiceSoap">
@@ -133,8 +188,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetTurnData">
-      <soap:operation soapAction="http://tempuri.org/GetTurnData" style="document" />
+    <wsdl:operation name="GetRefreshedData">
+      <soap:operation soapAction="http://tempuri.org/GetRefreshedData" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -160,6 +215,24 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="NeedsTurn">
+      <soap:operation soapAction="http://tempuri.org/NeedsTurn" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RefreshAvailable">
+      <soap:operation soapAction="http://tempuri.org/RefreshAvailable" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="GameDataServiceSoap12" type="tns:GameDataServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
@@ -172,8 +245,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetTurnData">
-      <soap12:operation soapAction="http://tempuri.org/GetTurnData" style="document" />
+    <wsdl:operation name="GetRefreshedData">
+      <soap12:operation soapAction="http://tempuri.org/GetRefreshedData" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -192,6 +265,24 @@
     </wsdl:operation>
     <wsdl:operation name="SendState">
       <soap12:operation soapAction="http://tempuri.org/SendState" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="NeedsTurn">
+      <soap12:operation soapAction="http://tempuri.org/NeedsTurn" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RefreshAvailable">
+      <soap12:operation soapAction="http://tempuri.org/RefreshAvailable" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

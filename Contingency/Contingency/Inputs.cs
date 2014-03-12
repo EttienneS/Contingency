@@ -31,6 +31,11 @@ namespace Contingency
 
             CatchViewMove();
 
+            if (WaitThread != null && WaitThread.IsAlive)
+            {
+                return;
+            }
+
             if (Keyboard.GetState().IsKeyDown(Keys.Enter))
             {
                 _waitJoin.Abort();
@@ -102,15 +107,7 @@ namespace Contingency
             }
         }
 
-        private void EndTurnClicked(object sender, EventArgs e)
-        {
-         //   _messages.Add("Waiting for opponent", new Vector2(100, 100));
-
-            _inPlanningMode = false;
-            _remainingPlayTime = 5000;
-        }
-
-        private void MouseClickedGame()
+      private void MouseClickedGame()
         {
             Unit selectedUnit = GetSelctedUnit();
 
@@ -131,7 +128,7 @@ namespace Contingency
                 foreach (Button b in _buttons)
                 {
                     if (b.Visible)
-                        b.CheckClicked(clickLocation);
+                        b.CheckClicked(clickLocation + ViewOffset);
                 }
             }
             else

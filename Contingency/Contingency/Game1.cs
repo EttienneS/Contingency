@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ServiceModel;
 using System.Threading;
 using System.Xml;
 using Contingency.GameDataService;
@@ -13,36 +12,25 @@ namespace Contingency
 {
     public partial class Game1
     {
+        public GameDataServiceSoapClient DataService = new GameDataServiceSoapClient();
+        public Thread WaitThread;
         private const int TotalPlayTime = 5000;
         private readonly ButtonList _buttons = new ButtonList();
         private readonly Menu _menu = new Menu();
-        private GameState _gameState = new GameState();
+        private string _currentGameId = "1";
+        private GameState _gameState;
         private bool _inPlanningMode = true;
         private Texture2D _lineTexture;
+        private Rectangle _map;
         private bool _menuMode = true;
         private Dictionary<string, Vector2> _messages = new Dictionary<string, Vector2>();
         private MouseState _mouseStateCurrent, _mouseStatePrevious;
+        private string _playerId = Environment.MachineName;
         private int _remainingPlayTime = TotalPlayTime;
         private SpriteBatch _spriteBatch;
+        private Rectangle _view;
         private Thread _waitJoin;
         private string CurrentTeam = "red";
-        private string _currentGameId = "aaaaaaaaaaaaaaaaaaaaa";
-        private string _playerId = Environment.MachineName;
-
-        public GameDataServiceSoapClient DataService = new GameDataServiceSoapClient();
-
-
-        private Rectangle _view;
-
-        private Vector2 ViewOffset
-        {
-            get
-            {
-                return new Vector2(_view.X, _view.Y);
-            }
-        }
-
-        private Rectangle _map;
 
         public Game1()
         {
@@ -58,6 +46,34 @@ namespace Contingency
             _map = new Rectangle(0, 0, 1920, 1080);
 
             Content.RootDirectory = "Content";
+        }
+
+        private Vector2 ViewOffset
+        {
+            get
+            {
+                return new Vector2(_view.X, _view.Y);
+            }
+        }
+
+        public void WaitForOppent()
+        {
+            while (true)
+            {
+                XmlNode tempState = DataService.GetRefreshedData(_currentGameId, _playerId);
+                while (tempState == null)
+                {
+                    Thread.Sleep(100);
+                }
+
+                _gameState = GameState.Deserialize(tempState);
+                _messages.Remove("Waiting for opponent");
+
+                _inPlanningMode = false;
+                _remainingPlayTime = 5000;
+
+                break;
+            }
         }
 
         protected override void Initialize()
@@ -115,6 +131,18 @@ namespace Contingency
             GenerateStage(800, 0, 0, 3, 3); // small blocks
         }
 
+        private void EndTurnClicked(object sender, EventArgs e)
+        {
+            _messages.Add("Waiting for opponent", new Vector2(100, 100));
+            DataService.SendState(_currentGameId, (XmlElement)_gameState.Serialize(), _playerId, CurrentTeam);
+
+            if (!DataService.RefreshAvailable(_currentGameId, _playerId))
+            {
+                WaitThread = new Thread(WaitForOppent);
+                WaitThread.Start();
+            }
+        }
+
         private void GenerateStage(int maxBlocks, int minWidth, int minHeight, int maxWidth, int maxHeight)
         {
             int currentBlockCounter = 0;
@@ -165,32 +193,25 @@ namespace Contingency
             }
         }
 
-        private void EndTurnClicked(object sender, EventArgs e)
-        {
-            _messages.Add("Waiting for opponent", new Vector2(100, 100));
-            DataService.SendState(_currentGameId, (XmlElement)_gameState.Serialize(), _playerId, CurrentTeam);
-
-            _inPlanningMode = false;
-            _remainingPlayTime = 5000;
-
-            WaitThread = new Thread(WaitForOppent);
-            WaitThread.Start();
-        }
-
-        public Thread WaitThread;
-        public void WaitForOppent()
-        {
-            // GameState state = GameState.Deserialize(DataService.GetTurnData(_currentGameId, _playerId));
-
-            while (true)
-            {
-                Thread.Sleep(5);
-            }
-        }
-
         private void JoinGame()
         {
-            _gameState = GameState.Deserialize(DataService.GetState(_currentGameId, _playerId));
+            if (_gameState != null && !DataService.NeedsTurn(_currentGameId, _playerId, CurrentTeam))
+            {
+                WaitThread = new Thread(WaitForOppent);
+                WaitThread.Start();
+
+                return;
+            }
+
+            var tempState = DataService.GetState(_currentGameId, _playerId);
+
+            if (tempState == null)
+            {
+                return;
+            }
+
+            _gameState = GameState.Deserialize(tempState);
+
             CurrentTeam = DataService.GetTeam(_currentGameId, _playerId);
 
             ToggleMenuMode(false);

@@ -20,8 +20,8 @@ namespace Contingency.GameDataService {
         Contingency.GameDataService.GetStateResponse GetState(Contingency.GameDataService.GetStateRequest request);
         
         // CODEGEN: Generating message contract since element name gameId from namespace http://tempuri.org/ is not marked nillable
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetTurnData", ReplyAction="*")]
-        Contingency.GameDataService.GetTurnDataResponse GetTurnData(Contingency.GameDataService.GetTurnDataRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetRefreshedData", ReplyAction="*")]
+        Contingency.GameDataService.GetRefreshedDataResponse GetRefreshedData(Contingency.GameDataService.GetRefreshedDataRequest request);
         
         // CODEGEN: Generating message contract since element name gameId from namespace http://tempuri.org/ is not marked nillable
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetTeam", ReplyAction="*")]
@@ -30,6 +30,14 @@ namespace Contingency.GameDataService {
         // CODEGEN: Generating message contract since element name gameId from namespace http://tempuri.org/ is not marked nillable
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/SendState", ReplyAction="*")]
         Contingency.GameDataService.SendStateResponse SendState(Contingency.GameDataService.SendStateRequest request);
+        
+        // CODEGEN: Generating message contract since element name gameId from namespace http://tempuri.org/ is not marked nillable
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/NeedsTurn", ReplyAction="*")]
+        Contingency.GameDataService.NeedsTurnResponse NeedsTurn(Contingency.GameDataService.NeedsTurnRequest request);
+        
+        // CODEGEN: Generating message contract since element name gameId from namespace http://tempuri.org/ is not marked nillable
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/RefreshAvailable", ReplyAction="*")]
+        Contingency.GameDataService.RefreshAvailableResponse RefreshAvailable(Contingency.GameDataService.RefreshAvailableRequest request);
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -108,15 +116,15 @@ namespace Contingency.GameDataService {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
-    public partial class GetTurnDataRequest {
+    public partial class GetRefreshedDataRequest {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetTurnData", Namespace="http://tempuri.org/", Order=0)]
-        public Contingency.GameDataService.GetTurnDataRequestBody Body;
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetRefreshedData", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.GetRefreshedDataRequestBody Body;
         
-        public GetTurnDataRequest() {
+        public GetRefreshedDataRequest() {
         }
         
-        public GetTurnDataRequest(Contingency.GameDataService.GetTurnDataRequestBody Body) {
+        public GetRefreshedDataRequest(Contingency.GameDataService.GetRefreshedDataRequestBody Body) {
             this.Body = Body;
         }
     }
@@ -125,7 +133,7 @@ namespace Contingency.GameDataService {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
-    public partial class GetTurnDataRequestBody {
+    public partial class GetRefreshedDataRequestBody {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
         public string gameId;
@@ -133,10 +141,10 @@ namespace Contingency.GameDataService {
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=1)]
         public string playerId;
         
-        public GetTurnDataRequestBody() {
+        public GetRefreshedDataRequestBody() {
         }
         
-        public GetTurnDataRequestBody(string gameId, string playerId) {
+        public GetRefreshedDataRequestBody(string gameId, string playerId) {
             this.gameId = gameId;
             this.playerId = playerId;
         }
@@ -146,15 +154,15 @@ namespace Contingency.GameDataService {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
-    public partial class GetTurnDataResponse {
+    public partial class GetRefreshedDataResponse {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetTurnDataResponse", Namespace="http://tempuri.org/", Order=0)]
-        public Contingency.GameDataService.GetTurnDataResponseBody Body;
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="GetRefreshedDataResponse", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.GetRefreshedDataResponseBody Body;
         
-        public GetTurnDataResponse() {
+        public GetRefreshedDataResponse() {
         }
         
-        public GetTurnDataResponse(Contingency.GameDataService.GetTurnDataResponseBody Body) {
+        public GetRefreshedDataResponse(Contingency.GameDataService.GetRefreshedDataResponseBody Body) {
             this.Body = Body;
         }
     }
@@ -163,16 +171,16 @@ namespace Contingency.GameDataService {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
-    public partial class GetTurnDataResponseBody {
+    public partial class GetRefreshedDataResponseBody {
         
         [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
-        public System.Xml.XmlElement GetTurnDataResult;
+        public System.Xml.XmlElement GetRefreshedDataResult;
         
-        public GetTurnDataResponseBody() {
+        public GetRefreshedDataResponseBody() {
         }
         
-        public GetTurnDataResponseBody(System.Xml.XmlElement GetTurnDataResult) {
-            this.GetTurnDataResult = GetTurnDataResult;
+        public GetRefreshedDataResponseBody(System.Xml.XmlElement GetRefreshedDataResult) {
+            this.GetRefreshedDataResult = GetRefreshedDataResult;
         }
     }
     
@@ -314,10 +322,165 @@ namespace Contingency.GameDataService {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute()]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
     public partial class SendStateResponseBody {
         
+        [System.Runtime.Serialization.DataMemberAttribute(Order=0)]
+        public bool SendStateResult;
+        
         public SendStateResponseBody() {
+        }
+        
+        public SendStateResponseBody(bool SendStateResult) {
+            this.SendStateResult = SendStateResult;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class NeedsTurnRequest {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="NeedsTurn", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.NeedsTurnRequestBody Body;
+        
+        public NeedsTurnRequest() {
+        }
+        
+        public NeedsTurnRequest(Contingency.GameDataService.NeedsTurnRequestBody Body) {
+            this.Body = Body;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class NeedsTurnRequestBody {
+        
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+        public string gameId;
+        
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=1)]
+        public string playerId;
+        
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=2)]
+        public string team;
+        
+        public NeedsTurnRequestBody() {
+        }
+        
+        public NeedsTurnRequestBody(string gameId, string playerId, string team) {
+            this.gameId = gameId;
+            this.playerId = playerId;
+            this.team = team;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class NeedsTurnResponse {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="NeedsTurnResponse", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.NeedsTurnResponseBody Body;
+        
+        public NeedsTurnResponse() {
+        }
+        
+        public NeedsTurnResponse(Contingency.GameDataService.NeedsTurnResponseBody Body) {
+            this.Body = Body;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class NeedsTurnResponseBody {
+        
+        [System.Runtime.Serialization.DataMemberAttribute(Order=0)]
+        public bool NeedsTurnResult;
+        
+        public NeedsTurnResponseBody() {
+        }
+        
+        public NeedsTurnResponseBody(bool NeedsTurnResult) {
+            this.NeedsTurnResult = NeedsTurnResult;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class RefreshAvailableRequest {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="RefreshAvailable", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.RefreshAvailableRequestBody Body;
+        
+        public RefreshAvailableRequest() {
+        }
+        
+        public RefreshAvailableRequest(Contingency.GameDataService.RefreshAvailableRequestBody Body) {
+            this.Body = Body;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class RefreshAvailableRequestBody {
+        
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+        public string gameId;
+        
+        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=1)]
+        public string playerId;
+        
+        public RefreshAvailableRequestBody() {
+        }
+        
+        public RefreshAvailableRequestBody(string gameId, string playerId) {
+            this.gameId = gameId;
+            this.playerId = playerId;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class RefreshAvailableResponse {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Name="RefreshAvailableResponse", Namespace="http://tempuri.org/", Order=0)]
+        public Contingency.GameDataService.RefreshAvailableResponseBody Body;
+        
+        public RefreshAvailableResponse() {
+        }
+        
+        public RefreshAvailableResponse(Contingency.GameDataService.RefreshAvailableResponseBody Body) {
+            this.Body = Body;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.Runtime.Serialization.DataContractAttribute(Namespace="http://tempuri.org/")]
+    public partial class RefreshAvailableResponseBody {
+        
+        [System.Runtime.Serialization.DataMemberAttribute(Order=0)]
+        public bool RefreshAvailableResult;
+        
+        public RefreshAvailableResponseBody() {
+        }
+        
+        public RefreshAvailableResponseBody(bool RefreshAvailableResult) {
+            this.RefreshAvailableResult = RefreshAvailableResult;
         }
     }
     
@@ -363,17 +526,17 @@ namespace Contingency.GameDataService {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Contingency.GameDataService.GetTurnDataResponse Contingency.GameDataService.GameDataServiceSoap.GetTurnData(Contingency.GameDataService.GetTurnDataRequest request) {
-            return base.Channel.GetTurnData(request);
+        Contingency.GameDataService.GetRefreshedDataResponse Contingency.GameDataService.GameDataServiceSoap.GetRefreshedData(Contingency.GameDataService.GetRefreshedDataRequest request) {
+            return base.Channel.GetRefreshedData(request);
         }
         
-        public System.Xml.XmlElement GetTurnData(string gameId, string playerId) {
-            Contingency.GameDataService.GetTurnDataRequest inValue = new Contingency.GameDataService.GetTurnDataRequest();
-            inValue.Body = new Contingency.GameDataService.GetTurnDataRequestBody();
+        public System.Xml.XmlElement GetRefreshedData(string gameId, string playerId) {
+            Contingency.GameDataService.GetRefreshedDataRequest inValue = new Contingency.GameDataService.GetRefreshedDataRequest();
+            inValue.Body = new Contingency.GameDataService.GetRefreshedDataRequestBody();
             inValue.Body.gameId = gameId;
             inValue.Body.playerId = playerId;
-            Contingency.GameDataService.GetTurnDataResponse retVal = ((Contingency.GameDataService.GameDataServiceSoap)(this)).GetTurnData(inValue);
-            return retVal.Body.GetTurnDataResult;
+            Contingency.GameDataService.GetRefreshedDataResponse retVal = ((Contingency.GameDataService.GameDataServiceSoap)(this)).GetRefreshedData(inValue);
+            return retVal.Body.GetRefreshedDataResult;
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -395,7 +558,7 @@ namespace Contingency.GameDataService {
             return base.Channel.SendState(request);
         }
         
-        public void SendState(string gameId, System.Xml.XmlElement state, string playerId, string team) {
+        public bool SendState(string gameId, System.Xml.XmlElement state, string playerId, string team) {
             Contingency.GameDataService.SendStateRequest inValue = new Contingency.GameDataService.SendStateRequest();
             inValue.Body = new Contingency.GameDataService.SendStateRequestBody();
             inValue.Body.gameId = gameId;
@@ -403,6 +566,36 @@ namespace Contingency.GameDataService {
             inValue.Body.playerId = playerId;
             inValue.Body.team = team;
             Contingency.GameDataService.SendStateResponse retVal = ((Contingency.GameDataService.GameDataServiceSoap)(this)).SendState(inValue);
+            return retVal.Body.SendStateResult;
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        Contingency.GameDataService.NeedsTurnResponse Contingency.GameDataService.GameDataServiceSoap.NeedsTurn(Contingency.GameDataService.NeedsTurnRequest request) {
+            return base.Channel.NeedsTurn(request);
+        }
+        
+        public bool NeedsTurn(string gameId, string playerId, string team) {
+            Contingency.GameDataService.NeedsTurnRequest inValue = new Contingency.GameDataService.NeedsTurnRequest();
+            inValue.Body = new Contingency.GameDataService.NeedsTurnRequestBody();
+            inValue.Body.gameId = gameId;
+            inValue.Body.playerId = playerId;
+            inValue.Body.team = team;
+            Contingency.GameDataService.NeedsTurnResponse retVal = ((Contingency.GameDataService.GameDataServiceSoap)(this)).NeedsTurn(inValue);
+            return retVal.Body.NeedsTurnResult;
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        Contingency.GameDataService.RefreshAvailableResponse Contingency.GameDataService.GameDataServiceSoap.RefreshAvailable(Contingency.GameDataService.RefreshAvailableRequest request) {
+            return base.Channel.RefreshAvailable(request);
+        }
+        
+        public bool RefreshAvailable(string gameId, string playerId) {
+            Contingency.GameDataService.RefreshAvailableRequest inValue = new Contingency.GameDataService.RefreshAvailableRequest();
+            inValue.Body = new Contingency.GameDataService.RefreshAvailableRequestBody();
+            inValue.Body.gameId = gameId;
+            inValue.Body.playerId = playerId;
+            Contingency.GameDataService.RefreshAvailableResponse retVal = ((Contingency.GameDataService.GameDataServiceSoap)(this)).RefreshAvailable(inValue);
+            return retVal.Body.RefreshAvailableResult;
         }
     }
 }

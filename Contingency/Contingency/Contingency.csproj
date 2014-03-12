@@ -140,7 +140,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Icon.ico" />
-    <None Include="Properties\DataSources\System.Xml.XmlElement.datasource" />
     <None Include="Service References\GameDataService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -148,13 +147,14 @@
     <None Include="Service References\GameDataService\configuration.svcinfo" />
     <None Include="Service References\GameDataService\configuration91.svcinfo" />
     <None Include="Service References\GameDataService\GameDataService.disco" />
+    <None Include="Properties\DataSources\System.Xml.XmlElement.datasource" />
+    <None Include="Service References\GameDataService\GameDataService.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Content\Font.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Service References\GameDataService\GameDataService.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
