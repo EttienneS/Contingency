@@ -65,7 +65,7 @@ namespace Difficult_circumstances
 
             bool turnEnded = Controller.Controller.ParseInput(WorldModel);
 
-          //  if (turnEnded)
+            if (turnEnded)
             {
                 if (_updateThread == null || !_updateThread.IsAlive)
                 {

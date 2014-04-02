@@ -8,124 +8,10 @@ namespace Difficult_circumstances.Model.Entity.Creatures
 {
     internal class Magentaur : Creature
     {
-        public readonly List<Tile> Memory = new List<Tile>();
+        private readonly List<Tile> _memory = new List<Tile>();
 
-        public Tile TargetTile;
-
-        public override void Update()
-        {
-            if (CurrentHunger >= 5)
-            {
-                if (Memory.Count >= 5)
-                {
-                    Memory.RemoveAt(0);
-                }
-
-                Memory.Add(CurrentTile);
-
-                if (TargetTile == null)
-                {
-                    // search for a tile with food on it
-                    Tile closest = null;
-                    int distance = int.MaxValue;
-                    foreach (Tile t in VisibleTiles)
-                    {
-                        var gr = t.TileContents.Where(g => g is Grass && (g as Grass).Lenght > 5).ToList();
-                        if (gr.Count > 0)
-                        {
-                            if (closest == null)
-                            {
-                                closest = t;
-                                distance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
-                            }
-                            else
-                            {
-                                int newDistance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
-                                if (newDistance < distance)
-                                {
-                                    closest = t;
-                                    distance = newDistance;
-                                }
-                            }
-                        }
-                    }
-                    if (closest != null)
-                        TargetTile = closest;
-                }
-
-                if (TargetTile == null)
-                {
-                    // move around randomly but do not repeat movements for the last 5 turns
-                    Amble();
-                }
-                else
-                {
-                    int x = CurrentTile.X - TargetTile.X;
-                    int y = CurrentTile.Y - TargetTile.Y;
-
-                    if (x > 0)
-                        x = CurrentTile.X - 1;
-
-                    if (x < 0)
-                        x = CurrentTile.X + 1;
-
-                    if (y > 0)
-                        y = CurrentTile.Y - 1;
-
-                    if (y < 0)
-                        y = CurrentTile.Y + 1;
-
-                    if (x == 0 && TargetTile.X != 0)
-                        x = CurrentTile.X;
-
-                    if (y == 0 && TargetTile.Y != 0)
-                        y = CurrentTile.Y;
-
-                    if (x != CurrentTile.X || y != CurrentTile.Y)
-                    {
-                        Move(AdjacentTiles.First(tile => tile.X == x && tile.Y == y));
-                    }
-                }
-            }
-            else
-            {
-                if (new Random().Next(1, 10) > 5)
-                {
-                    Amble();
-                }
-
-            }
-
-            if (CurrentHunger > -10)
-            {
-                foreach (EntityBase e in CurrentTile.TileContents)
-                {
-                    if (e is Grass)
-                    {
-                        Grass g = e as Grass;
-
-                        CurrentHunger -= g.GetEaten();
-                    }
-                }
-            }
-
-        }
-
-        public void Amble()
-        {
-            // move around to find a tile with food on it
-            int counter = 0;
-            Tile t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
-            while (t.Biome == Biome.Water || Memory.Contains(t))
-            {
-                t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
-                counter++;
-                if (counter > 8)
-                    return;
-            }
-
-            Move(t);
-        }
+        private Tile _foodSource;
+        private Tile _targetTile;
 
         public Magentaur()
         {
@@ -139,6 +25,168 @@ namespace Difficult_circumstances.Model.Entity.Creatures
             DesiredFood = Food.Grass;
             ProvidesFoodType = Food.Meat;
             NutritionalValue = 100;
+        }
+
+        private void Amble()
+        {
+            // move around to find a tile with food on it
+            int counter = 0;
+            Tile t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
+            while (t.Biome == Biome.Water || _memory.Contains(t))
+            {
+                t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
+                counter++;
+                if (counter > 8)
+                    return;
+            }
+
+            Move(t);
+        }
+
+        public override void Update()
+        {
+            if (_memory.Count >= 5)
+            {
+                _memory.RemoveAt(0);
+            }
+
+            _memory.Add(CurrentTile);
+
+            VisibleTiles.Add(CurrentTile);
+
+            LookForFood();
+
+            LookForDanger();
+
+            if (_targetTile == null && CurrentHunger > 5 && _foodSource != null)
+            {
+                // is hungry and has a known food source with no other targets
+                _targetTile = _foodSource;
+            }
+
+            MoveToTarget();
+
+            TryToEat();
+        }
+
+        private void LookForDanger()
+        {
+            Tile dangerTile = null;
+            foreach (Tile t in VisibleTiles.Where(t => t.TileContents.Count > 0))
+            {
+                foreach (EntityBase e in t.TileContents.Where(f => f is IFeeder))
+                {
+                    IFeeder feeder = e as IFeeder;
+                    if (feeder.DesiredFood.HasFlag(ProvidesFoodType))
+                    {
+                        dangerTile = t;
+                        break;
+                    }
+                }
+            }
+
+            if (dangerTile != null)
+            {
+                // run away this thing potentially wants to eat me
+                int maxDist = 0;
+                foreach (Tile visTile in VisibleTiles)
+                {
+                    if (visTile == dangerTile) continue;
+
+                    int tileDistance = Math.Abs((visTile.X - CurrentTile.X)) + Math.Abs((visTile.Y - CurrentTile.Y));
+                    if (tileDistance > maxDist)
+                    {
+                        maxDist = tileDistance;
+                        _targetTile = visTile;
+                    }
+                }
+            }
+        }
+
+        private void LookForFood()
+        {
+            if (_foodSource == null || CurrentHunger > 20)
+            {
+                // search for a tile with food on it
+                Tile closest = null;
+                int distance = int.MaxValue;
+                foreach (Tile t in from t in VisibleTiles where t.TileContents.Count > 0 from e in t.TileContents where e is Grass select t)
+                {
+                    if (closest == null)
+                    {
+                        closest = t;
+                        distance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
+                    }
+                    else
+                    {
+                        int newDistance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
+                        if (newDistance < distance)
+                        {
+                            closest = t;
+                            distance = newDistance;
+                        }
+                    }
+                }
+                if (closest != null)
+                    _foodSource = closest;
+            }
+        }
+
+        private void MoveToTarget()
+        {
+            if (_targetTile != null)
+            {
+                int x = CurrentTile.X - _targetTile.X;
+                int y = CurrentTile.Y - _targetTile.Y;
+
+                if (x > 0)
+                    x = CurrentTile.X - 1;
+
+                if (x < 0)
+                    x = CurrentTile.X + 1;
+
+                if (y > 0)
+                    y = CurrentTile.Y - 1;
+
+                if (y < 0)
+                    y = CurrentTile.Y + 1;
+
+                if (x == 0 && _targetTile.X != 0)
+                    x = CurrentTile.X;
+
+                if (y == 0 && _targetTile.Y != 0)
+                    y = CurrentTile.Y;
+
+                if (x != CurrentTile.X || y != CurrentTile.Y)
+                {
+                    Move(AdjacentTiles.First(tile => tile.X == x && tile.Y == y));
+                }
+            }
+            else
+            {
+                Amble();
+            }
+        }
+
+        private void TryToEat()
+        {
+            if (CurrentHunger > -10)
+            {
+                foreach (EntityBase e in CurrentTile.TileContents)
+                {
+                    if (e is Grass)
+                    {
+                        Grass g = e as Grass;
+                        CurrentHunger -= g.GetEaten();
+                    }
+                }
+            }
+            else
+            {
+                // full
+                if (_targetTile == _foodSource)
+                    _targetTile = null;
+            }
         }
     }
 }

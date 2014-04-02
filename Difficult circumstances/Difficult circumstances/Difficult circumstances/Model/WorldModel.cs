@@ -31,7 +31,7 @@ namespace Difficult_circumstances.Model
 
                     if (Tiles[x, y].Biome == Biome.Forest && random.Next(1, 100) > 75)
                     {
-                      Tiles[x, y].TileContents.Add(new Grass((short)random.Next(1, 50)));
+                        Tiles[x, y].AddContent(new Grass((short)random.Next(1, 50)));
                     }
                 }
             }
