@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Difficult_circumstances.Model.Entity;
-using Difficult_circumstances.Model.Entity.Creatures;
-using Difficult_circumstances.Model.Entity.Properties;
+using Difficult_circumstances.Model.Entities.Fauna;
+using Difficult_circumstances.Model.Entities.Flora;
+using Difficult_circumstances.Model.Entities.Objects;
+using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 using Microsoft.Xna.Framework;
 
@@ -20,37 +21,39 @@ namespace Difficult_circumstances.Model
         public WorldModel(short tileSize)
         {
             TileSize = tileSize;
-            Random random = new Random();
 
             int biomes = Enum.GetNames(typeof(Biome)).Length;
             for (short x = 0; x < TilesHeight; x++)
             {
                 for (short y = 0; y < TilesWidth; y++)
                 {
-                    Tiles[x, y] = new Tile(x, y, (Biome)random.Next(0, biomes), TileSize, TileSize);
+                    Tiles[x, y] = new Tile(x, y, (Biome)MathHelper.Random.Next(0, biomes), TileSize, TileSize);
 
-                    if (Tiles[x, y].Biome == Biome.Forest && random.Next(1, 100) > 75)
+                    if (Tiles[x, y].Biome == Biome.Temperate && MathHelper.Random.Next(1, 100) > 75)
                     {
-                        Tiles[x, y].AddContent(new Grass((short)random.Next(1, 50)));
+                        Tiles[x, y].AddContent(new Grass());
+                    }
+
+                    if (Tiles[x, y].Biome == Biome.Forest && MathHelper.Random.Next(1, 100) > 95)
+                    {
+                        Tiles[x, y].AddContent(new Tree());
+                    }
+
+                    if (MathHelper.Random.Next(1, 100) > 80)
+                    {
+                        Tiles[x, y].AddContent(new Rock());
                     }
                 }
             }
 
-            //Player = new Player();
-            //Tiles[5, 5].AddContent(Player);
-            //Tiles[2, 1].AddContent(new Magentaur());
-            //Tiles[1, 2].AddContent(new Grass(1));
-            //Tiles[2, 2].AddContent(new Grass(1));
-            //Tiles[2, 3].AddContent(new Grass(1));
-
             for (short i = 0; i < 1000; i++)
             {
-                Tiles[random.Next(1, TilesWidth - 1), random.Next(1, TilesHeight - 1)].AddContent(new Magentaur());
+                Tiles[MathHelper.Random.Next(1, TilesWidth - 1), MathHelper.Random.Next(1, TilesHeight - 1)].AddContent(new Magentaur());
             }
 
             Player = new Player();
 
-            Tiles[random.Next(1, TilesWidth - 1), random.Next(1, TilesHeight - 1)].AddContent(Player);
+            Tiles[MathHelper.Random.Next(1, TilesWidth - 1), MathHelper.Random.Next(1, TilesHeight - 1)].AddContent(Player);
             Tiles[Player.CurrentTile.X, Player.CurrentTile.Y - 1].AddContent(new Bluerior());
             Tiles[Player.CurrentTile.X, Player.CurrentTile.Y - 1].AddContent(new Bluerior());
             Tiles[Player.CurrentTile.X, Player.CurrentTile.Y - 1].AddContent(new Bluerior());

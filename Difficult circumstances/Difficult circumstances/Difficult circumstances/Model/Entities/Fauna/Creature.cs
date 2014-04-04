@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Difficult_circumstances.Model.Entity.Properties;
+using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 
-namespace Difficult_circumstances.Model.Entity.Creatures
+namespace Difficult_circumstances.Model.Entities.Fauna
 {
-    public abstract class Creature : EntityBase, ISighted, IMobile, IAnimate, IFeeder, IEdible
+    public abstract class Creature : LivingEntity, ISighted, IMobile, IAnimate, IFeeder, IEdible
     {
         protected Creature()
         {
@@ -15,6 +15,8 @@ namespace Difficult_circumstances.Model.Entity.Creatures
             HungerRate = 1;
 
             Damage = 1;
+
+            FoodName = Name;
         }
 
         public List<Tile> AdjacentTiles { get; set; }
@@ -25,8 +27,6 @@ namespace Difficult_circumstances.Model.Entity.Creatures
 
         public short Health { get; set; }
 
-        public short Height { get; set; }
-
         public short HungerRate { get; set; }
 
         public short MaxHealth { get; set; }
@@ -34,8 +34,6 @@ namespace Difficult_circumstances.Model.Entity.Creatures
         public List<Tile> VisibleTiles { get; set; }
 
         public short VisionRadius { get; set; }
-
-        public short Width { get; set; }
 
         public bool Move(Tile targetTile)
         {
@@ -51,12 +49,7 @@ namespace Difficult_circumstances.Model.Entity.Creatures
 
             return false;
         }
-
-        public override void TurnComplete()
-        {
-          
-        }
-
+        
         public Food ProvidesFoodType { get; set; }
 
         public short NutritionalValue { get; set; }
@@ -67,7 +60,13 @@ namespace Difficult_circumstances.Model.Entity.Creatures
             return NutritionalValue;
         }
 
-        public short Damage { get; set; }
+        public string FoodName { get; set; }
 
+        public bool CanBeEaten()
+        {
+            return true;
+        }
+
+        public short Damage { get; set; }
     }
 }

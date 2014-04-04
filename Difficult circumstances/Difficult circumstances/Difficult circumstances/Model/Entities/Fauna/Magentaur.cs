@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Difficult_circumstances.Model.Entity.Properties;
+using Difficult_circumstances.Model.Entities.Flora;
+using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 
-namespace Difficult_circumstances.Model.Entity.Creatures
+namespace Difficult_circumstances.Model.Entities.Fauna
 {
     internal class Magentaur : Creature
     {
@@ -74,11 +75,12 @@ namespace Difficult_circumstances.Model.Entity.Creatures
             Tile dangerTile = null;
             foreach (Tile t in VisibleTiles.Where(t => t.TileContents.Count > 0))
             {
-                foreach (EntityBase e in t.TileContents.Where(f => f is IFeeder))
+                foreach (IEntity e in t.TileContents.Where(f => f is IFeeder))
                 {
                     IFeeder feeder = e as IFeeder;
                     if (feeder.DesiredFood.HasFlag(ProvidesFoodType))
                     {
+                        // this thing eats and what it eats is me
                         dangerTile = t;
                         break;
                     }
@@ -100,6 +102,12 @@ namespace Difficult_circumstances.Model.Entity.Creatures
                         _targetTile = visTile;
                     }
                 }
+            }
+
+            if (_foodSource != null && _targetTile != _foodSource)
+            {
+                // no danger, amble around
+                _targetTile = null;
             }
         }
 
@@ -172,7 +180,7 @@ namespace Difficult_circumstances.Model.Entity.Creatures
         {
             if (CurrentHunger > -10)
             {
-                foreach (EntityBase e in CurrentTile.TileContents)
+                foreach (IEntity e in CurrentTile.TileContents)
                 {
                     if (e is Grass)
                     {

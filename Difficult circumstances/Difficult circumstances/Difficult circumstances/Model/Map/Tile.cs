@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Difficult_circumstances.Model.Entity;
+using Difficult_circumstances.Model.Entities;
 using Microsoft.Xna.Framework;
 
 namespace Difficult_circumstances.Model.Map
@@ -19,7 +19,7 @@ namespace Difficult_circumstances.Model.Map
 
             Width = width;
             Height = height;
-            TileContents = new List<EntityBase>();
+            TileContents = new List<IEntity>();
         }
 
         public Biome Biome { get; private set; }
@@ -32,7 +32,7 @@ namespace Difficult_circumstances.Model.Map
 
         public short Y { get; set; }
 
-        public List<EntityBase> TileContents { get; private set; }
+        public List<IEntity> TileContents { get; private set; }
 
         public override string ToString()
         {
@@ -44,13 +44,13 @@ namespace Difficult_circumstances.Model.Map
             return new Vector2(X * tileSize, Y * tileSize);
         }
 
-        internal void Move(EntityBase entity, Tile tile)
+        internal void Move(IEntity entity, Tile tile)
         {
             tile.AddContent(entity);
             TileContents.Remove(entity);
         }
 
-        public void AddContent(EntityBase entity)
+        public void AddContent(IEntity entity)
         {
             entity.CurrentTile = this;
             TileContents.Add(entity);

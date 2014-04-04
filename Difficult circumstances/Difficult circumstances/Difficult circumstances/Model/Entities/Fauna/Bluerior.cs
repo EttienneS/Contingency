@@ -1,4 +1,4 @@
-﻿namespace Difficult_circumstances.Model.Entity.Creatures
+﻿namespace Difficult_circumstances.Model.Entities.Fauna
 {
     internal class Bluerior : Creature
     {

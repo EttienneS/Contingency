@@ -1,4 +1,4 @@
-﻿namespace Difficult_circumstances.Model.Entity.Properties
+﻿namespace Difficult_circumstances.Model.Entities.Properties
 {
     public interface IFeeder
     {

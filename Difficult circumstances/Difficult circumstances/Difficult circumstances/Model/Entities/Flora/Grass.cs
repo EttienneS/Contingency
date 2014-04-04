@@ -1,32 +1,33 @@
-﻿using Difficult_circumstances.Model.Entity.Properties;
+﻿using Difficult_circumstances.Model.Entities.Properties;
 
-namespace Difficult_circumstances.Model.Entity
+namespace Difficult_circumstances.Model.Entities.Flora
 {
-    internal class Grass : EntityBase, ILiving, IEdible
+    internal class Grass : LivingEntity, ILiving, IEdible
     {
-        public Grass(short lenght)
+        public Grass()
         {
             Name = GetType().Name;
             NutritionalValue = 5;
             ProvidesFoodType = Food.Grass;
             Health = MaxHealth = 10;
 
-            Lenght = lenght;
+            Lenght = (short)MathHelper.Random.Next(1, 35);
+            Width = Height = Lenght;
+
+            FoodName = Name;
         }
 
         public short Lenght { get; set; }
 
         public override void Update()
         {
-            if (Lenght < 30)
+            if (Lenght < 35)
             {
                 Lenght++;
+                Width = Height = Lenght;
             }
         }
 
-        public override void TurnComplete()
-        {
-        }
 
         public Food ProvidesFoodType { get; set; }
 
@@ -43,6 +44,12 @@ namespace Difficult_circumstances.Model.Entity
             short x = (short)(Lenght * NutritionalValue);
             Lenght = 0;
             return x;
+        }
+
+        public string FoodName { get; set; }
+        public bool CanBeEaten()
+        {
+            return Lenght > 0;
         }
 
         public short Health { get; set; }

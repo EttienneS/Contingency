@@ -1,12 +1,15 @@
-﻿using Difficult_circumstances.Model.Entity.Properties;
+﻿using System.Collections.Generic;
+using Difficult_circumstances.Model.Entities.Properties;
 
-namespace Difficult_circumstances.Model.Entity.Creatures
+namespace Difficult_circumstances.Model.Entities.Fauna
 {
     public class Player : Creature
     {
         public override void Update()
         {
         }
+
+        public readonly List<IEntity> Inventory = new List<IEntity>(); 
 
         public Player()
         {
@@ -39,6 +42,20 @@ namespace Difficult_circumstances.Model.Entity.Creatures
         {
             IEdible edible = (context as IEdible);
             CurrentHunger -= edible.GetEaten();
+
+            
+            if (Inventory.Contains(context as IEntity))
+            {
+                Inventory.Remove(context as IEntity);
+            }
+        }
+
+        internal void PickUp(object context)
+        {
+            IEntity item = context as IEntity;
+            
+            Inventory.Add(item);
+            CurrentTile.TileContents.Remove(item);
         }
     }
 }

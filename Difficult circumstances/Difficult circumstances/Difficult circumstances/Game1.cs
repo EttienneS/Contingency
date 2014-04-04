@@ -63,14 +63,17 @@ namespace Difficult_circumstances
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            bool turnEnded = Controller.Controller.ParseInput(WorldModel);
-
-            if (turnEnded)
+            if (_updateThread == null || !_updateThread.IsAlive)
             {
-                if (_updateThread == null || !_updateThread.IsAlive)
+                bool turnEnded = Controller.Controller.ParseInput(WorldModel);
+
+                if (turnEnded)
                 {
-                    _updateThread = new Thread(unused => Controller.Controller.Update(WorldModel, gameTime));
-                    _updateThread.Start();
+                    if (_updateThread == null || !_updateThread.IsAlive)
+                    {
+                        _updateThread = new Thread(unused => Controller.Controller.Update(WorldModel, gameTime));
+                        _updateThread.Start();
+                    }
                 }
             }
 

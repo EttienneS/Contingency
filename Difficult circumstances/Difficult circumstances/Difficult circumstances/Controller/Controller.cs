@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Difficult_circumstances.Model;
-using Difficult_circumstances.Model.Entity;
-using Difficult_circumstances.Model.Entity.Creatures;
-using Difficult_circumstances.Model.Entity.Properties;
+using Difficult_circumstances.Model.Entities;
+using Difficult_circumstances.Model.Entities.Fauna;
+using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -26,7 +26,6 @@ namespace Difficult_circumstances.Controller
 
         private static KeyboardState _currentKeyboardState;
         private static KeyboardState _lastKeyboardState;
-        private static double _timer;
 
         public static bool KeyPressed(Keys key)
         {
@@ -169,12 +168,13 @@ namespace Difficult_circumstances.Controller
 
             Menu menu = new Menu();
 
-            menu.MenuOptions.Add(new Menu(menu, "Stay", worldModel.Player.Stay));
-
             Menu atackOption = new Menu(menu, "Attack", null);
             Menu eatOption = new Menu(menu, "Eat", null);
+            Menu pickUpOption = new Menu(menu, "Pick Up", null);
 
-            foreach (EntityBase entity in current.TileContents.Where(f => !(f is Player)))
+            List<IEntity> entities = current.TileContents.Where(f => !(f is Player)).ToList();
+            entities.AddRange(worldModel.Player.Inventory);
+            foreach (IEntity entity in entities)
             {
                 if (entity is IEdible)
                 {
@@ -199,7 +199,17 @@ namespace Difficult_circumstances.Controller
                         CheckIfCanBeEaten(worldModel, entity, eatOption);
                     }
                 }
+
+                if (entity is IItem)
+                {
+                    IItem item = entity as IItem;
+                    if (!worldModel.Player.Inventory.Contains(entity) && item.CanLoot())
+                    {
+                        pickUpOption.AddOption(entity.Name, worldModel.Player.PickUp, entity);
+                    }
+                }
             }
+
 
             if (atackOption.MenuOptions.Count > 0)
                 menu.MenuOptions.Add(atackOption);
@@ -207,17 +217,22 @@ namespace Difficult_circumstances.Controller
             if (eatOption.MenuOptions.Count > 0)
                 menu.MenuOptions.Add(eatOption);
 
+            if (pickUpOption.MenuOptions.Count > 0)
+                menu.MenuOptions.Add(pickUpOption);
+
+            menu.MenuOptions.Add(new Menu(menu, "Stay", worldModel.Player.Stay));
+
             worldModel.ActiveMenu = menu;
 
             return menu;
         }
 
-        private static void CheckIfCanBeEaten(WorldModel worldModel, EntityBase entity, Menu eatOption)
+        private static void CheckIfCanBeEaten(WorldModel worldModel, IEntity entity, Menu eatOption)
         {
             IEdible e = entity as IEdible;
-            if (worldModel.Player.DesiredFood.HasFlag(e.ProvidesFoodType))
+            if (e != null && worldModel.Player.DesiredFood.HasFlag(e.ProvidesFoodType) && e.CanBeEaten())
             {
-                eatOption.AddOption(entity.Name, worldModel.Player.Eat, entity);
+                eatOption.AddOption(e.FoodName, worldModel.Player.Eat, entity);
             }
         }
 
@@ -225,21 +240,12 @@ namespace Difficult_circumstances.Controller
         {
             DiagStopwatch.Reset();
             DiagStopwatch.Start();
-            _timer = 0;
 
-            List<EntityBase> processedEntities = new List<EntityBase>();
+            List<IEntity> processedEntities = new List<IEntity>();
 
             foreach (Tile tile in worldModel.Tiles)
             {
                 UpdateTile(tile, processedEntities, worldModel);
-            }
-
-            //Parallel.ForEach(worldModel.Tiles.Cast<Tile>(), tile => UpdateTile(tile, processedEntities, worldModel));
-
-            foreach (EntityBase entity in processedEntities)
-            {
-                if (entity != null)
-                    entity.TurnComplete();
             }
 
             DiagStopwatch.Stop();
@@ -261,64 +267,54 @@ namespace Difficult_circumstances.Controller
             return TimeSpan.FromMilliseconds(f / Spans.Count);
         }
 
-        private static void UpdateTile(Tile tile, List<EntityBase> processedEntities, WorldModel worldModel)
+        private static void UpdateTile(Tile tile, List<IEntity> processedEntities, WorldModel worldModel)
         {
             for (int i = 0; i < tile.TileContents.Count; i++)
             {
-                EntityBase e = tile.TileContents[i];
+                LivingEntity e = tile.TileContents[i] as LivingEntity;
 
-                if (e == null)
-                {
-                    tile.TileContents.Remove(e);
-                }
-                else
+                if (e != null)
                 {
                     if (!processedEntities.Contains(e))
                     {
-                        if (e is IAnimate)
+                        IAnimate animate = e as IAnimate;
+                        if (animate != null)
                         {
-                            IAnimate l = e as IAnimate;
-
-                            if (l.Health <= 0)
+                            if (animate.Health <= 0)
                             {
                                 // unit is dead
                                 continue;
                             }
                         }
 
-                        if (e is ISighted)
+                        ISighted sighted = e as ISighted;
+                        if (sighted != null)
                         {
-                            ISighted sighted = e as ISighted;
                             sighted.VisibleTiles = worldModel.GetVisibleTiles(tile.X, tile.Y, sighted);
                         }
 
-                        if (e is IMobile)
+                        IMobile mobile = e as IMobile;
+                        if (mobile != null)
                         {
-                            IMobile mobile = e as IMobile;
                             mobile.AdjacentTiles = worldModel.GetAdjacentTiles(tile.X, tile.Y, mobile);
                         }
 
-                        if (e is IFeeder)
+                        IFeeder feeder = e as IFeeder;
+                        if (feeder != null)
                         {
-                            IFeeder feeder = (e as IFeeder);
                             feeder.CurrentHunger += feeder.HungerRate;
 
-                            if (feeder.CurrentHunger > 50 && e is ILiving)
+                            ILiving living = e as ILiving;
+                            if (feeder.CurrentHunger > 50 && living != null)
                             {
-                                (e as ILiving).Health -= feeder.HungerRate;
-
-                                if ((e as ILiving).Health < 1)
-                                {
-                                    //worldModel.ViewOffset = new Vector2(tile.X * worldModel.TileSize - 8 * worldModel.TileSize, tile.Y * worldModel.TileSize - 8 * worldModel.TileSize);
-                                    famine++;
-                                }
+                                living.Health -= feeder.HungerRate;
                             }
                         }
 
                         e.Update();
 
                         // entity moved or died
-                        if (e == null || e.CurrentTile != tile)
+                        if (e.CurrentTile != tile)
                         {
                             i--;
                         }
@@ -327,9 +323,7 @@ namespace Difficult_circumstances.Controller
                     }
                 }
             }
-
         }
 
-        private static int famine = 0;
     }
 }

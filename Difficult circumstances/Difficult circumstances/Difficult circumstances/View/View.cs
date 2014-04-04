@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using Difficult_circumstances.Model;
-using Difficult_circumstances.Model.Entity;
-using Difficult_circumstances.Model.Entity.Creatures;
+using Difficult_circumstances.Model.Entities;
+using Difficult_circumstances.Model.Entities.Fauna;
+using Difficult_circumstances.Model.Entities.Flora;
+using Difficult_circumstances.Model.Entities.Objects;
+using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -160,38 +163,85 @@ namespace Difficult_circumstances.View
             foreach (Tile tile in worldModel.Tiles)
             {
                 Vector2 location = tile.GetLocation(worldModel.TileSize) - worldModel.ViewOffset;
+
+                Vector2 itemOffset = new Vector2(2,2);
                 if (OnScreen(location, tile.Width, tile.Height))
                 {
                     spriteBatch.Draw(GetTexture(tile, device), location, Color.White);
 
                     for (int i = 0; i < tile.TileContents.Count; i++)
                     {
-                        EntityBase e = tile.TileContents[i];
+                        IEntity e = tile.TileContents[i];
 
-                        Creature creature = e as Creature;
-                        if (creature != null)
+                        float offsetX = (worldModel.TileSize - e.Width) / 2;
+                        float offsetY = (worldModel.TileSize - e.Height) / 2;
+
                         {
-                            if (creature.Health > 0)
+                            Creature creature = e as Creature;
+                            if (creature != null)
                             {
-                                float offsetX = (worldModel.TileSize - creature.Width) / 2;
-                                float offsetY = (worldModel.TileSize - creature.Height) / 2;
-                                spriteBatch.Draw(GetTexture(creature, device), location + new Vector2(offsetX,offsetY)  , Color.White);
-                                FontRenderer.DrawText(spriteBatch, (int)location.X, (int)location.Y, creature.CurrentHunger.ToString());
-                            }
-                            else
-                            {
-                                spriteBatch.Draw(GetTexture(creature.Height, creature.Width, Color.Black, "DEAD" + creature.Name, device), location, Color.White);
+                                if (creature.Health > 0)
+                                {
+                                    spriteBatch.Draw(GetTexture(creature, device), location + new Vector2(offsetX, offsetY), Color.White);
+                                    FontRenderer.DrawText(spriteBatch, (int)location.X, (int)location.Y, creature.CurrentHunger.ToString());
+                                }
+                                else
+                                {
+                                    spriteBatch.Draw(GetTexture(creature.Height, creature.Width, Color.Black, "DEAD" + creature.Name, device), location, Color.White);
+                                }
                             }
                         }
 
-                        Grass g = e as Grass;
-                        if (g != null)
                         {
-                            spriteBatch.Draw(GetTexture(worldModel.TileSize, g.Lenght, Color.LimeGreen, "Grass" + g.Lenght, device), location, Color.White);
+                            Grass g = e as Grass;
+                            if (g != null)
+                            {
+                                spriteBatch.Draw(
+                                    GetTexture(g.Width, g.Height, Color.YellowGreen, "Grass" + g.Lenght, device),
+                                    location + new Vector2(offsetX, offsetY), Color.White);
+                            }
+                        }
+
+                        {
+                            Tree t = e as Tree;
+                            if (t != null)
+                            {
+                                spriteBatch.Draw(GetTexture(t.Width, t.Height, Color.Brown, "TreeBranch", device), location + new Vector2(offsetX, offsetY), Color.White);
+                                spriteBatch.Draw(GetTexture(worldModel.TileSize - t.Width + 2, t.Height / 2, Color.DarkGreen, "TreeLeaves", device), location + new Vector2(3, 0), Color.White);
+                            }
+                        }
+
+                        {
+
+                            IItem item = e as IItem;
+                            if (item != null)
+                            {
+                                Color c = Color.Black;
+                                if (item is Rock)
+                                {
+                                    c = Color.SlateGray;
+                                }
+
+                                if (item is Apple)
+                                {
+                                    c = Color.Red;
+                                }
+
+                                spriteBatch.Draw(GetTexture(e.Width, e.Height, c, "Item" + e.Name, device), location + itemOffset, Color.White);
+
+                                itemOffset += new Vector2(e.Width + 1, 0);
+
+                                if (itemOffset.X > worldModel.TileSize)
+                                {
+                                    itemOffset = new Vector2(2, e.Height + 2);
+                                }
+                            }
                         }
                     }
                 }
             }
+
+            #region Debug
 
 #if DEBUG
             //foreach (Tile tile in worldModel.Tiles)
@@ -201,7 +251,7 @@ namespace Difficult_circumstances.View
             //    {
             //        for (int i = 0; i < tile.TileContents.Count; i++)
             //        {
-            //            EntityBase e = tile.TileContents[i];
+            //            Entity e = tile.TileContents[i];
 
             //            if (e is Creature)
             //            {
@@ -233,6 +283,8 @@ namespace Difficult_circumstances.View
             FontRenderer.DrawText(spriteBatch, 1, 45, "Turn: " + worldModel.Turn);
 
 #endif
+
+            #endregion
 
             Vector2 menuLoc = new Vector2((worldModel.Player.CurrentTile.X * worldModel.TileSize) + (worldModel.TileSize / 2),
                                                (worldModel.Player.CurrentTile.Y * worldModel.TileSize) + (worldModel.TileSize / 2))

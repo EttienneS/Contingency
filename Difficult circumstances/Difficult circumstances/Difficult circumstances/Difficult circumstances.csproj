@@ -37,19 +37,25 @@
   <ItemGroup>
     <Compile Include="Controller\Controller.cs" />
     <Compile Include="MathHelper.cs" />
-    <Compile Include="Model\Entity\Grass.cs" />
-    <Compile Include="Model\Entity\Properties\IAttacker.cs" />
-    <Compile Include="Model\Entity\Properties\IEdible.cs" />
-    <Compile Include="Model\Entity\Properties\IFeeder.cs" />
-    <Compile Include="Model\Entity\Properties\IAnimate.cs" />
+    <Compile Include="Model\Entities\LivingEntity.cs" />
+    <Compile Include="Model\Entities\Objects\Apple.cs" />
+    <Compile Include="Model\Entities\Flora\Tree.cs" />
+    <Compile Include="Model\Entities\Flora\Grass.cs" />
+    <Compile Include="Model\Entities\Objects\Rock.cs" />
+    <Compile Include="Model\Entities\Properties\IItem.cs" />
+    <Compile Include="Model\Entities\Properties\IAttacker.cs" />
+    <Compile Include="Model\Entities\Properties\IEdible.cs" />
+    <Compile Include="Model\Entities\Properties\IFeeder.cs" />
+    <Compile Include="Model\Entities\Properties\IAnimate.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="Model\Entity\Creatures\Bluerior.cs" />
-    <Compile Include="Model\Entity\Creatures\Player.cs" />
-    <Compile Include="Model\Entity\Creatures\Creature.cs" />
-    <Compile Include="Model\Entity\EntityBase.cs" />
-    <Compile Include="Model\Entity\Properties\IMobile.cs" />
-    <Compile Include="Model\Entity\Properties\ISighted.cs" />
-    <Compile Include="Model\Entity\Creatures\Magentaur.cs" />
+    <Compile Include="Model\Entities\Fauna\Bluerior.cs" />
+    <Compile Include="Model\Entities\Fauna\Player.cs" />
+    <Compile Include="Model\Entities\Fauna\Creature.cs" />
+    <Compile Include="Model\Entities\Entity.cs" />
+    <Compile Include="Model\Entities\Properties\ILiving.cs" />
+    <Compile Include="Model\Entities\Properties\IMobile.cs" />
+    <Compile Include="Model\Entities\Properties\ISighted.cs" />
+    <Compile Include="Model\Entities\Fauna\Magentaur.cs" />
     <Compile Include="Model\Map\Tile.cs" />
     <Compile Include="Model\Menu.cs" />
     <Compile Include="Model\WorldModel.cs" />
@@ -86,7 +92,7 @@
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Model\Entity\AI\" />
+    <Folder Include="Model\Entities\AI\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\font.fnt">

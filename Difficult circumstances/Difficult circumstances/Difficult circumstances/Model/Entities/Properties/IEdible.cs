@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Difficult_circumstances.Model.Entity.Properties
+namespace Difficult_circumstances.Model.Entities.Properties
 {
     public interface IEdible
     {
@@ -9,6 +9,10 @@ namespace Difficult_circumstances.Model.Entity.Properties
         short NutritionalValue { get; set; }
 
         short GetEaten();
+
+        string FoodName { get; set; }
+
+        bool CanBeEaten();
     }
 
     [Flags]
