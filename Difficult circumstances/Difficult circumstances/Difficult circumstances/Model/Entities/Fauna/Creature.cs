@@ -11,10 +11,9 @@ namespace Difficult_circumstances.Model.Entities.Fauna
         {
             Name = GetType().Name + ":" + NameGenerator.GenerateName();
             NutritionalValue = 50;
-            ProvidesFoodType = Food.Meat;
             HungerRate = 1;
 
-            Damage = 1;
+            Damage = 10;
 
             FoodName = Name;
         }
@@ -49,7 +48,7 @@ namespace Difficult_circumstances.Model.Entities.Fauna
 
             return false;
         }
-        
+
         public Food ProvidesFoodType { get; set; }
 
         public short NutritionalValue { get; set; }

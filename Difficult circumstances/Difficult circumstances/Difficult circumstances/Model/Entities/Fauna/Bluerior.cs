@@ -8,8 +8,8 @@
 
         public Bluerior()
         {
-            Width = 15;
-            Height = 25;
+            Width = 10;
+            Height = 10;
             VisionRadius = 3;
             MaxHealth = Health = 6;
         }

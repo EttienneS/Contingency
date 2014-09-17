@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Difficult_circumstances.Model.Entities.Properties;
+using Difficult_circumstances.Model.Map;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Difficult_circumstances.Model.Entities.Flora;
-using Difficult_circumstances.Model.Entities.Properties;
-using Difficult_circumstances.Model.Map;
 
 namespace Difficult_circumstances.Model.Entities.Fauna
 {
@@ -16,16 +15,17 @@ namespace Difficult_circumstances.Model.Entities.Fauna
 
         public Magentaur()
         {
-            Width = 25;
-            Height = 25;
+            Width = 15;
+            Height = 15;
             VisionRadius = 3;
 
             Health = MaxHealth = 30;
             HungerRate = 2;
             CurrentHunger = 5;
-            DesiredFood = Food.Grass;
+            DesiredFood = Food.Meat;
             ProvidesFoodType = Food.Meat;
             NutritionalValue = 100;
+            Damage = 2;
         }
 
         private void Amble()
@@ -33,7 +33,7 @@ namespace Difficult_circumstances.Model.Entities.Fauna
             // move around to find a tile with food on it
             int counter = 0;
             Tile t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
-            while (t.Biome == Biome.Water || _memory.Contains(t))
+            while (!t.Passable(this) || _memory.Contains(t))
             {
                 t = AdjacentTiles[MathHelper.Random.Next(0, AdjacentTiles.Count)];
                 counter++;
@@ -77,8 +77,9 @@ namespace Difficult_circumstances.Model.Entities.Fauna
             {
                 foreach (IEntity e in t.TileContents.Where(f => f is IFeeder))
                 {
+                    IAnimate animate = e as IAnimate;
                     IFeeder feeder = e as IFeeder;
-                    if (feeder.DesiredFood.HasFlag(ProvidesFoodType))
+                    if (feeder.DesiredFood.HasFlag(ProvidesFoodType) && animate != null && animate.Damage > Damage)
                     {
                         // this thing eats and what it eats is me
                         dangerTile = t;
@@ -118,20 +119,38 @@ namespace Difficult_circumstances.Model.Entities.Fauna
                 // search for a tile with food on it
                 Tile closest = null;
                 int distance = int.MaxValue;
-                foreach (Tile t in from t in VisibleTiles where t.TileContents.Count > 0 from e in t.TileContents where e is Grass select t)
+                foreach (Tile t in VisibleTiles.Where(t => t.TileContents.Count > 0))
                 {
-                    if (closest == null)
+                    foreach (IEntity e in t.TileContents)
                     {
-                        closest = t;
-                        distance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
-                    }
-                    else
-                    {
-                        int newDistance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
-                        if (newDistance < distance)
+                        if (e == this || e.GetType() == GetType())
                         {
-                            closest = t;
-                            distance = newDistance;
+                            continue;
+                        }
+
+                        IEdible edible = e as IEdible;
+
+                        if (edible == null)
+                        {
+                            continue;
+                        }
+
+                        if (edible.ProvidesFoodType != 0 && DesiredFood.HasFlag(edible.ProvidesFoodType))
+                        {
+                            if (closest == null)
+                            {
+                                closest = t;
+                                distance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
+                            }
+                            else
+                            {
+                                int newDistance = Math.Abs(CurrentTile.X - t.X) + Math.Abs(CurrentTile.Y - t.Y);
+                                if (newDistance < distance)
+                                {
+                                    closest = t;
+                                    distance = newDistance;
+                                }
+                            }
                         }
                     }
                 }
@@ -167,7 +186,38 @@ namespace Difficult_circumstances.Model.Entities.Fauna
 
                 if (x != CurrentTile.X || y != CurrentTile.Y)
                 {
-                    Move(AdjacentTiles.First(tile => tile.X == x && tile.Y == y));
+                    Tile target = AdjacentTiles.FirstOrDefault(tile => tile.X == x && tile.Y == y);
+
+                    if (target != null && target.Passable(this))
+                    {
+                        Move(target);
+                    }
+                    else
+                    {
+                        target = null;
+                        int max = 0;
+                        foreach (Tile t in AdjacentTiles.Where(tile => tile.X == x || tile.Y == y))
+                        {
+                            if (t.Passable(this))
+                            {
+                                int distance = Math.Abs(CurrentTile.X - _targetTile.X) + Math.Abs(CurrentTile.Y - _targetTile.Y);
+                                if (distance > max)
+                                {
+                                    max = distance;
+                                    target = t;
+                                }
+                            }
+                        }
+
+                        if (target != null)
+                        {
+                            Move(target);
+                        }
+                        else
+                        {
+                            Amble();
+                        }
+                    }
                 }
             }
             else
@@ -180,12 +230,28 @@ namespace Difficult_circumstances.Model.Entities.Fauna
         {
             if (CurrentHunger > -10)
             {
-                foreach (IEntity e in CurrentTile.TileContents)
+                for (int i = 0; i < CurrentTile.TileContents.Count; i++)
                 {
-                    if (e is Grass)
+                    IEntity e = CurrentTile.TileContents[i];
+
+                    IEdible edible = e as IEdible;
+
+                    if (edible != null && edible.ProvidesFoodType != 0 && DesiredFood.HasFlag(edible.ProvidesFoodType))
                     {
-                        Grass g = e as Grass;
-                        CurrentHunger -= g.GetEaten();
+                        IAnimate animate = e as IAnimate;
+                        if (animate != null)
+                        {
+                            if (animate.Health > 0)
+                            {
+                                // attack
+                                animate.Health -= Damage;
+                                Health -= animate.Damage;
+                            }
+                            else
+                            {
+                                CurrentHunger -= edible.GetEaten();
+                            }
+                        }
                     }
                 }
             }

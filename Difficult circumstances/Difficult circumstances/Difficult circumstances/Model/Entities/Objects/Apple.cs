@@ -12,8 +12,10 @@ namespace Difficult_circumstances.Model.Entities.Objects
             ProvidesFoodType = Food.Fruit;
             FoodName = Name;
 
-            Height = Width = 5;
+            Height = Width = 3;
         }
+
+        public PropertyList Properties { get; set; }
 
         public Food ProvidesFoodType { get; set; }
 
@@ -44,5 +46,7 @@ namespace Difficult_circumstances.Model.Entities.Objects
         public int Width { get; set; }
 
         public int Height { get; set; }
+
+        public bool Illuminated { get; set; }
     }
 }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Difficult_circumstances.Model;
+﻿using Difficult_circumstances.Model;
 using Difficult_circumstances.Model.Entities;
+using Difficult_circumstances.Model.Entities.Constructs;
 using Difficult_circumstances.Model.Entities.Fauna;
 using Difficult_circumstances.Model.Entities.Flora;
 using Difficult_circumstances.Model.Entities.Objects;
@@ -8,6 +8,8 @@ using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Difficult_circumstances.View
 {
@@ -31,19 +33,15 @@ namespace Difficult_circumstances.View
                 Color color;
                 switch (tile.Biome)
                 {
-                    case Biome.Water:
-                        color = Color.Blue;
-                        break;
-
-                    case Biome.Temperate:
+                    case Biome.Forest1:
                         color = Color.Green;
                         break;
 
-                    case Biome.Desert:
-                        color = Color.SandyBrown;
+                    case Biome.Forest2:
+                        color = Color.DarkGreen;
                         break;
 
-                    case Biome.Forest:
+                    case Biome.Forest3:
                         color = Color.ForestGreen;
                         break;
 
@@ -94,12 +92,12 @@ namespace Difficult_circumstances.View
 
                 Color color = Color.White;
 
-                if (creature.GetType().Name == typeof(Magentaur).Name)
+                if (creature is Magentaur)
                     color = Color.Magenta;
-                else if (creature.GetType().Name == typeof(Bluerior).Name)
+                else if (creature is Bluerior)
                     color = Color.DarkBlue;
-                else if (creature.GetType().Name == typeof(Player).Name)
-                    color = Color.DarkRed;
+                else if (creature is Player)
+                    color = Color.White;
 
                 Color[] texData = new Color[creature.Width * creature.Height];
 
@@ -155,7 +153,7 @@ namespace Difficult_circumstances.View
             return CachedTextures[name];
         }
 
-        public static void UpdateView(WorldModel worldModel, GraphicsDevice device, SpriteBatch spriteBatch, GameTime gameTime)
+        public static void UpdateView(WorldModel worldModel, GraphicsDevice device, SpriteBatch spriteBatch)
         {
             device.Clear(Color.Black);
             spriteBatch.Begin();
@@ -164,10 +162,10 @@ namespace Difficult_circumstances.View
             {
                 Vector2 location = tile.GetLocation(worldModel.TileSize) - worldModel.ViewOffset;
 
-                Vector2 itemOffset = new Vector2(2,2);
+                Vector2 itemOffset = new Vector2(2, 2);
                 if (OnScreen(location, tile.Width, tile.Height))
                 {
-                    spriteBatch.Draw(GetTexture(tile, device), location, Color.White);
+                    spriteBatch.Draw(GetTexture(tile, device), location, worldModel.GetAmbientColor(tile));
 
                     for (int i = 0; i < tile.TileContents.Count; i++)
                     {
@@ -182,12 +180,11 @@ namespace Difficult_circumstances.View
                             {
                                 if (creature.Health > 0)
                                 {
-                                    spriteBatch.Draw(GetTexture(creature, device), location + new Vector2(offsetX, offsetY), Color.White);
-                                    FontRenderer.DrawText(spriteBatch, (int)location.X, (int)location.Y, creature.CurrentHunger.ToString());
+                                    spriteBatch.Draw(GetTexture(creature, device), location + new Vector2(offsetX, offsetY), worldModel.GetAmbientColor(creature));
                                 }
                                 else
                                 {
-                                    spriteBatch.Draw(GetTexture(creature.Height, creature.Width, Color.Black, "DEAD" + creature.Name, device), location, Color.White);
+                                    spriteBatch.Draw(GetTexture(creature.Height, creature.Width, Color.Black, "DEAD" + creature.Name, device), location, worldModel.GetAmbientColor(creature));
                                 }
                             }
                         }
@@ -196,9 +193,7 @@ namespace Difficult_circumstances.View
                             Grass g = e as Grass;
                             if (g != null)
                             {
-                                spriteBatch.Draw(
-                                    GetTexture(g.Width, g.Height, Color.YellowGreen, "Grass" + g.Lenght, device),
-                                    location + new Vector2(offsetX, offsetY), Color.White);
+                                spriteBatch.Draw(GetTexture(g.Width, g.Height, Color.YellowGreen, "Grass" + g.Lenght, device), location + new Vector2(offsetX, offsetY), worldModel.GetAmbientColor(g));
                             }
                         }
 
@@ -206,13 +201,12 @@ namespace Difficult_circumstances.View
                             Tree t = e as Tree;
                             if (t != null)
                             {
-                                spriteBatch.Draw(GetTexture(t.Width, t.Height, Color.Brown, "TreeBranch", device), location + new Vector2(offsetX, offsetY), Color.White);
-                                spriteBatch.Draw(GetTexture(worldModel.TileSize - t.Width + 2, t.Height / 2, Color.DarkGreen, "TreeLeaves", device), location + new Vector2(3, 0), Color.White);
+                                spriteBatch.Draw(GetTexture(t.Width - 5, worldModel.TileSize, Color.Brown, "TreeBranch", device), location + new Vector2(offsetX + 3, 0), worldModel.GetAmbientColor(t));
+                                spriteBatch.Draw(GetTexture(worldModel.TileSize - 5, t.Height / 2 - 5, Color.DarkGreen, "TreeLeaves", device), location + new Vector2(3, 0), worldModel.GetAmbientColor(t));
                             }
                         }
 
                         {
-
                             IItem item = e as IItem;
                             if (item != null)
                             {
@@ -222,12 +216,17 @@ namespace Difficult_circumstances.View
                                     c = Color.SlateGray;
                                 }
 
+                                if (item is Flint)
+                                {
+                                    c = Color.Black;
+                                }
+
                                 if (item is Apple)
                                 {
                                     c = Color.Red;
                                 }
 
-                                spriteBatch.Draw(GetTexture(e.Width, e.Height, c, "Item" + e.Name, device), location + itemOffset, Color.White);
+                                spriteBatch.Draw(GetTexture(e.Width, e.Height, c, "Item" + e.Name, device), location + itemOffset, worldModel.GetAmbientColor(e));
 
                                 itemOffset += new Vector2(e.Width + 1, 0);
 
@@ -235,6 +234,16 @@ namespace Difficult_circumstances.View
                                 {
                                     itemOffset = new Vector2(2, e.Height + 2);
                                 }
+                            }
+                        }
+
+                        {
+                            Wall wall = e as Wall;
+                            if (wall != null)
+                            {
+                                Color c = Color.SlateGray;
+
+                                spriteBatch.Draw(GetTexture(e.Width, e.Height, c, "Construct" + e.Name, device), location, worldModel.GetAmbientColor(wall));
                             }
                         }
                     }
@@ -251,7 +260,7 @@ namespace Difficult_circumstances.View
             //    {
             //        for (int i = 0; i < tile.TileContents.Count; i++)
             //        {
-            //            Entity e = tile.TileContents[i];
+            //            IEntity e = tile.TileContents[i];
 
             //            if (e is Creature)
             //            {
@@ -261,7 +270,7 @@ namespace Difficult_circumstances.View
             //                    foreach (var x in creature.VisibleTiles)
             //                    {
             //                        spriteBatch.Draw(GetTexture(10, 10, Color.DarkViolet, "Vision", device),
-            //                            x.GetLocation(worldModel.TileSize) - worldModel.ViewOffset + new Vector2(5,5), Color.White);
+            //                            x.GetLocation(worldModel.TileSize) - worldModel.ViewOffset + new Vector2(5, 5), drawcol);
             //                    }
 
             //                // debug, draw adjacent of creture on tile
@@ -269,7 +278,7 @@ namespace Difficult_circumstances.View
             //                    foreach (var x in creature.AdjacentTiles)
             //                    {
             //                        spriteBatch.Draw(GetTexture(5, 5, Color.Blue, "Movement", device),
-            //                            x.GetLocation(worldModel.TileSize) - worldModel.ViewOffset, Color.White);
+            //                            x.GetLocation(worldModel.TileSize) - worldModel.ViewOffset, drawcol);
             //                    }
             //            }
             //        }
@@ -284,7 +293,7 @@ namespace Difficult_circumstances.View
 
 #endif
 
-            #endregion
+            #endregion Debug
 
             Vector2 menuLoc = new Vector2((worldModel.Player.CurrentTile.X * worldModel.TileSize) + (worldModel.TileSize / 2),
                                                (worldModel.Player.CurrentTile.Y * worldModel.TileSize) + (worldModel.TileSize / 2))

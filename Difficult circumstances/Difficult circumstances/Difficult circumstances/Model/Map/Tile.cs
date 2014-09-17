@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
-using Difficult_circumstances.Model.Entities;
+﻿using Difficult_circumstances.Model.Entities;
+using Difficult_circumstances.Model.Entities.Constructs;
+using Difficult_circumstances.Model.Entities.Properties;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Difficult_circumstances.Model.Map
 {
     public enum Biome
     {
-        Temperate, Water, Desert, Forest
+        Forest1, Forest2, Forest3
     }
 
     public class Tile
@@ -20,6 +23,7 @@ namespace Difficult_circumstances.Model.Map
             Width = width;
             Height = height;
             TileContents = new List<IEntity>();
+            Illuminators = new List<IIlluminator>();
         }
 
         public Biome Biome { get; private set; }
@@ -31,6 +35,8 @@ namespace Difficult_circumstances.Model.Map
         public short X { get; set; }
 
         public short Y { get; set; }
+
+        public List<IIlluminator> Illuminators { get; set; }
 
         public List<IEntity> TileContents { get; private set; }
 
@@ -46,6 +52,9 @@ namespace Difficult_circumstances.Model.Map
 
         internal void Move(IEntity entity, Tile tile)
         {
+            if (!tile.Passable(entity))
+                return;
+
             tile.AddContent(entity);
             TileContents.Remove(entity);
         }
@@ -54,6 +63,16 @@ namespace Difficult_circumstances.Model.Map
         {
             entity.CurrentTile = this;
             TileContents.Add(entity);
+        }
+
+        internal bool Passable(IEntity entity)
+        {
+            if (TileContents.Any(t => t is Wall))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Difficult_circumstances.Model;
+﻿using Difficult_circumstances.Model;
 using Difficult_circumstances.Model.Entities;
+using Difficult_circumstances.Model.Entities.Constructs;
 using Difficult_circumstances.Model.Entities.Fauna;
+using Difficult_circumstances.Model.Entities.Objects;
 using Difficult_circumstances.Model.Entities.Properties;
 using Difficult_circumstances.Model.Map;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Difficult_circumstances.Controller
 {
@@ -94,10 +97,13 @@ namespace Difficult_circumstances.Controller
 
                         if (x > 0 || x < worldModel.Tiles.Length - 1 || y > 0 || y < worldModel.Tiles.Length - 1)
                         {
-                            turnPassed = true;
-
                             Tile target = worldModel.Tiles[x, y];
-                            worldModel.Player.Move(target);
+
+                            if (target.Passable(worldModel.Player))
+                            {
+                                worldModel.Player.Move(target);
+                                turnPassed = true;
+                            }
                         }
                     }
                 }
@@ -162,6 +168,37 @@ namespace Difficult_circumstances.Controller
             return turnPassed;
         }
 
+        internal static void Update(WorldModel worldModel, GameTime gameTime)
+        {
+            DiagStopwatch.Reset();
+            DiagStopwatch.Start();
+
+            List<IEntity> processedEntities = new List<IEntity>();
+
+            Parallel.ForEach(worldModel.Tiles.Cast<Tile>(), tile => UpdateTileStatics(tile, worldModel));
+
+            foreach (Tile tile in worldModel.Tiles)
+            {
+                UpdateTileDynamics(tile, processedEntities, worldModel);
+            }
+
+            DiagStopwatch.Stop();
+            Spans.Add(DiagStopwatch.Elapsed);
+
+            worldModel.UpdateInterval = GetAverageUpdateTime().TotalMilliseconds;
+
+            worldModel.Turn++;
+        }
+
+        private static void CheckIfCanBeEaten(WorldModel worldModel, IEntity entity, Menu eatOption)
+        {
+            IEdible e = entity as IEdible;
+            if (e != null && worldModel.Player.DesiredFood.HasFlag(e.ProvidesFoodType) && e.CanBeEaten())
+            {
+                eatOption.AddOption(e.FoodName, worldModel.Player.Eat, entity);
+            }
+        }
+
         private static Menu GetAllActions(WorldModel worldModel)
         {
             Tile current = worldModel.Player.CurrentTile;
@@ -171,6 +208,8 @@ namespace Difficult_circumstances.Controller
             Menu atackOption = new Menu(menu, "Attack", null);
             Menu eatOption = new Menu(menu, "Eat", null);
             Menu pickUpOption = new Menu(menu, "Pick Up", null);
+            Menu buildOption = new Menu(menu, "Build", null);
+            Menu useOption = new Menu(menu, "Use", null);
 
             List<IEntity> entities = current.TileContents.Where(f => !(f is Player)).ToList();
             entities.AddRange(worldModel.Player.Inventory);
@@ -178,11 +217,10 @@ namespace Difficult_circumstances.Controller
             {
                 if (entity is IEdible)
                 {
-                    if (entity is IAnimate)
+                    IAnimate i = entity as IAnimate;
+                    if (i != null)
                     {
                         // if the entity is animate it can fight back, so kill it before eating it
-                        IAnimate i = entity as IAnimate;
-
                         if (i.Health > 0)
                         {
                             atackOption.AddOption(entity.Name, worldModel.Player.Attack, entity);
@@ -200,14 +238,25 @@ namespace Difficult_circumstances.Controller
                     }
                 }
 
-                if (entity is IItem)
+
+                IItem item = entity as IItem;
+                if (item != null)
                 {
-                    IItem item = entity as IItem;
                     if (!worldModel.Player.Inventory.Contains(entity) && item.CanLoot())
                     {
                         pickUpOption.AddOption(entity.Name, worldModel.Player.PickUp, entity);
                     }
                 }
+            }
+
+            if (worldModel.Player.Inventory.Any(i => i is Rock))
+            {
+                buildOption.AddOption("Rock wall", worldModel.Player.Build, new Wall());
+            }
+
+            foreach (var item in worldModel.Player.Inventory.Where(i => i is IUseable))
+            {
+                useOption.AddOption(item.Name, worldModel.Player.Use, worldModel.Player.Inventory.First(f => f is IUseable));
             }
 
 
@@ -220,40 +269,17 @@ namespace Difficult_circumstances.Controller
             if (pickUpOption.MenuOptions.Count > 0)
                 menu.MenuOptions.Add(pickUpOption);
 
+            if (buildOption.MenuOptions.Count > 0)
+                menu.MenuOptions.Add(buildOption);
+
+            if (useOption.MenuOptions.Count > 0)
+                menu.MenuOptions.Add(useOption);
+
             menu.MenuOptions.Add(new Menu(menu, "Stay", worldModel.Player.Stay));
 
             worldModel.ActiveMenu = menu;
 
             return menu;
-        }
-
-        private static void CheckIfCanBeEaten(WorldModel worldModel, IEntity entity, Menu eatOption)
-        {
-            IEdible e = entity as IEdible;
-            if (e != null && worldModel.Player.DesiredFood.HasFlag(e.ProvidesFoodType) && e.CanBeEaten())
-            {
-                eatOption.AddOption(e.FoodName, worldModel.Player.Eat, entity);
-            }
-        }
-
-        internal static void Update(WorldModel worldModel, GameTime gameTime)
-        {
-            DiagStopwatch.Reset();
-            DiagStopwatch.Start();
-
-            List<IEntity> processedEntities = new List<IEntity>();
-
-            foreach (Tile tile in worldModel.Tiles)
-            {
-                UpdateTile(tile, processedEntities, worldModel);
-            }
-
-            DiagStopwatch.Stop();
-            Spans.Add(DiagStopwatch.Elapsed);
-
-            worldModel.UpdateInterval = GetAverageUpdateTime().TotalMilliseconds;
-
-            worldModel.Turn++;
         }
 
         private static TimeSpan GetAverageUpdateTime()
@@ -267,7 +293,39 @@ namespace Difficult_circumstances.Controller
             return TimeSpan.FromMilliseconds(f / Spans.Count);
         }
 
-        private static void UpdateTile(Tile tile, List<IEntity> processedEntities, WorldModel worldModel)
+        private static void UpdateTileDynamics(Tile tile, List<IEntity> processedEntities, WorldModel worldModel)
+        {
+            for (int i = 0; i < tile.TileContents.Count; i++)
+            {
+                LivingEntity e = tile.TileContents[i] as LivingEntity;
+
+                if (e != null && !processedEntities.Contains(e))
+                {
+                    IAnimate animate = e as IAnimate;
+                    if (animate != null)
+                    {
+                        if (animate.Health <= 0)
+                        {
+                            // unit is dead
+                            processedEntities.Add(e);
+                            continue;
+                        }
+                    }
+
+                    e.Update();
+
+                    // entity moved or died
+                    if (e.CurrentTile != tile)
+                    {
+                        i--;
+                    }
+
+                    processedEntities.Add(e);
+                }
+            }
+        }
+
+        private static void UpdateTileStatics(Tile tile, WorldModel worldModel)
         {
             for (int i = 0; i < tile.TileContents.Count; i++)
             {
@@ -275,55 +333,47 @@ namespace Difficult_circumstances.Controller
 
                 if (e != null)
                 {
-                    if (!processedEntities.Contains(e))
+                    IAnimate animate = e as IAnimate;
+                    if (animate != null)
                     {
-                        IAnimate animate = e as IAnimate;
-                        if (animate != null)
+                        if (animate.Health <= 0)
                         {
-                            if (animate.Health <= 0)
-                            {
-                                // unit is dead
-                                continue;
-                            }
+                            // unit is dead
+                            continue;
                         }
+                    }
 
-                        ISighted sighted = e as ISighted;
-                        if (sighted != null)
+                    ISighted sighted = e as ISighted;
+                    if (sighted != null)
+                    {
+                        sighted.VisibleTiles = worldModel.GetVisibleTiles(tile.X, tile.Y, sighted);
+                    }
+
+                    IMobile mobile = e as IMobile;
+                    if (mobile != null)
+                    {
+                        mobile.AdjacentTiles = worldModel.GetAdjacentTiles(tile.X, tile.Y);
+                    }
+
+                    IFeeder feeder = e as IFeeder;
+                    if (feeder != null)
+                    {
+                        feeder.CurrentHunger += feeder.HungerRate;
+
+                        ILiving living = e as ILiving;
+                        if (feeder.CurrentHunger > 50 && living != null)
                         {
-                            sighted.VisibleTiles = worldModel.GetVisibleTiles(tile.X, tile.Y, sighted);
+                            living.Health -= feeder.HungerRate;
                         }
+                    }
 
-                        IMobile mobile = e as IMobile;
-                        if (mobile != null)
-                        {
-                            mobile.AdjacentTiles = worldModel.GetAdjacentTiles(tile.X, tile.Y, mobile);
-                        }
-
-                        IFeeder feeder = e as IFeeder;
-                        if (feeder != null)
-                        {
-                            feeder.CurrentHunger += feeder.HungerRate;
-
-                            ILiving living = e as ILiving;
-                            if (feeder.CurrentHunger > 50 && living != null)
-                            {
-                                living.Health -= feeder.HungerRate;
-                            }
-                        }
-
-                        e.Update();
-
-                        // entity moved or died
-                        if (e.CurrentTile != tile)
-                        {
-                            i--;
-                        }
-
-                        processedEntities.Add(e);
+                    IIlluminator iluminator = e as IIlluminator;
+                    if (iluminator != null)
+                    {
+                        iluminator.Illuminate();
                     }
                 }
             }
         }
-
     }
 }

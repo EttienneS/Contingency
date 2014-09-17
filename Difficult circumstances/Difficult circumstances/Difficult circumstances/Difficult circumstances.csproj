@@ -37,16 +37,20 @@
   <ItemGroup>
     <Compile Include="Controller\Controller.cs" />
     <Compile Include="MathHelper.cs" />
+    <Compile Include="Model\Entities\Constructs\Wall.cs" />
     <Compile Include="Model\Entities\LivingEntity.cs" />
     <Compile Include="Model\Entities\Objects\Apple.cs" />
     <Compile Include="Model\Entities\Flora\Tree.cs" />
     <Compile Include="Model\Entities\Flora\Grass.cs" />
+    <Compile Include="Model\Entities\Objects\Flint.cs" />
     <Compile Include="Model\Entities\Objects\Rock.cs" />
+    <Compile Include="Model\Entities\Properties\IAnimate.cs" />
+    <Compile Include="Model\Entities\Properties\IUseable.cs" />
+    <Compile Include="Model\Entities\Properties\IIlluminator.cs" />
     <Compile Include="Model\Entities\Properties\IItem.cs" />
-    <Compile Include="Model\Entities\Properties\IAttacker.cs" />
+    <Compile Include="Model\Entities\Properties\Attacker.cs" />
     <Compile Include="Model\Entities\Properties\IEdible.cs" />
     <Compile Include="Model\Entities\Properties\IFeeder.cs" />
-    <Compile Include="Model\Entities\Properties\IAnimate.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Model\Entities\Fauna\Bluerior.cs" />
     <Compile Include="Model\Entities\Fauna\Player.cs" />
@@ -95,9 +99,9 @@
     <Folder Include="Model\Entities\AI\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\font.fnt">
+    <Content Include="Content\font.fnt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

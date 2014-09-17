@@ -1,12 +1,12 @@
 ﻿#region Using Statements
 
-using System.IO;
-using System.Threading;
 using Difficult_circumstances.Model;
 using Difficult_circumstances.View;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
+using System.Threading;
 
 #endregion Using Statements
 
@@ -31,25 +31,24 @@ namespace Difficult_circumstances
             View.View.ScreenHeight = graphics.PreferredBackBufferHeight;
 
             Content.RootDirectory = "Content";
-
-            var fontFilePath = Path.Combine(Content.RootDirectory, "font.fnt");
-            using (var stream = TitleContainer.OpenStream(fontFilePath))
-            {
-                View.View.FontRenderer = new FontRenderer(FontRenderer.FontLoader.Load(stream), Content.Load<Texture2D>("font_0.png"));
-                // textRenderer initialization will go here
-                stream.Close();
-            }
         }
 
         protected override void Initialize()
         {
             base.Initialize();
-            WorldModel = new WorldModel(35);
+            WorldModel = new WorldModel(15);
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            var fontFilePath = Path.Combine(Content.RootDirectory, "font.fnt");
+            using (var stream = TitleContainer.OpenStream(fontFilePath))
+            {
+                View.View.FontRenderer = new FontRenderer(FontRenderer.FontLoader.Load(stream), Content.Load<Texture2D>("font_0"));
+                stream.Close();
+            }
         }
 
         protected override void UnloadContent()
@@ -74,6 +73,10 @@ namespace Difficult_circumstances
                         _updateThread = new Thread(unused => Controller.Controller.Update(WorldModel, gameTime));
                         _updateThread.Start();
                     }
+
+                    WorldModel.UpdateTime();
+
+                   
                 }
             }
 
@@ -82,7 +85,7 @@ namespace Difficult_circumstances
 
         protected override void Draw(GameTime gameTime)
         {
-            View.View.UpdateView(WorldModel, GraphicsDevice, _spriteBatch, gameTime);
+            View.View.UpdateView(WorldModel, GraphicsDevice, _spriteBatch);
 
             base.Draw(gameTime);
         }

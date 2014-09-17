@@ -1,4 +1,6 @@
-﻿using Difficult_circumstances.Model.Map;
+﻿using System.Collections.Generic;
+using Difficult_circumstances.Model.Entities.Properties;
+using Difficult_circumstances.Model.Map;
 
 namespace Difficult_circumstances.Model.Entities
 {
@@ -11,5 +13,21 @@ namespace Difficult_circumstances.Model.Entities
         int Width { get; set; }
 
         int Height { get; set; }
+
+        bool Illuminated { get; set; }
+
+        PropertyList Properties { get; set; }
     }
+
+    public interface IProperty
+    {
+        void Update();
+    }
+
+    public class PropertyList : List<IProperty>
+    {
+        
+    }
+
+
 }

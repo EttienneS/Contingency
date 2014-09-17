@@ -8,9 +8,7 @@ namespace Difficult_circumstances.Model.Entities.Objects
         public Rock()
         {
             Name = GetType().Name;
-            Width = 5;
-            Height = 5;
-
+            Height = Width = 3;
         }
 
 
@@ -26,5 +24,10 @@ namespace Difficult_circumstances.Model.Entities.Objects
         public int Width { get; set; }
 
         public int Height { get; set; }
+
+        public bool Illuminated { get; set; }
+
+
+        public PropertyList Properties { get; set; }
     }
 }

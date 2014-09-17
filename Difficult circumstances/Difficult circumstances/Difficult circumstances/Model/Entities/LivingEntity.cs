@@ -12,6 +12,11 @@ namespace Difficult_circumstances.Model.Entities
 
         public int Height { get; set; }
 
+        public bool Illuminated { get; set; }
+
         public abstract void Update();
+
+
+        public PropertyList Properties { get; set; }
     }
 }

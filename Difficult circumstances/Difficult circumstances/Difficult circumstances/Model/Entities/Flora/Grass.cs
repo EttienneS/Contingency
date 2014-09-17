@@ -11,7 +11,7 @@ namespace Difficult_circumstances.Model.Entities.Flora
             ProvidesFoodType = Food.Grass;
             Health = MaxHealth = 10;
 
-            Lenght = (short)MathHelper.Random.Next(1, 35);
+            Lenght = (short)MathHelper.Random.Next(1, 15);
             Width = Height = Lenght;
 
             FoodName = Name;
@@ -21,13 +21,15 @@ namespace Difficult_circumstances.Model.Entities.Flora
 
         public override void Update()
         {
-            if (Lenght < 35)
+            if (Lenght < 15)
             {
-                Lenght++;
+                if (MathHelper.Random.Next(1, 100) > 95)
+                {
+                    Lenght++;
+                }
                 Width = Height = Lenght;
             }
         }
-
 
         public Food ProvidesFoodType { get; set; }
 
@@ -47,6 +49,7 @@ namespace Difficult_circumstances.Model.Entities.Flora
         }
 
         public string FoodName { get; set; }
+
         public bool CanBeEaten()
         {
             return Lenght > 0;
